@@ -1,0 +1,64 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}API Keys{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1> API Keys</h1>
+    <a href="{% url 'organizations:apikey_create' %}" class="btn btn-primary"> Nova API Key</a>
+</div>
+
+<div class="table-container">
+    {% if apikeys %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Organização</th>
+                    <th>Chave</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key in apikeys %}
+                <tr>
+                    <td><strong>{{ key.name }}</strong></td>
+                    <td>{{ key.organization.name }}</td>
+                    <td><code class="api-key">{{ key.key }}</code></td>
+                    <td>
+                        {% if key.is_active %}
+                            <span class="badge badge-success">Ativa</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inativa</span>
+                        {% endif %}
+                    </td>
+                    <td class="action-buttons">
+                        <button onclick="copyKey('{{ key.key }}')" class="btn btn-sm btn-secondary"> Copiar</button>
+                        <a href="{% url 'organizations:apikey_delete' key.pk %}" class="btn btn-sm btn-danger">Excluir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2zM2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+            </svg>
+            <h3>Nenhuma API Key criada</h3>
+            <p>Crie uma chave de API para integrar com sistemas externos</p>
+            <a href="{% url 'organizations:apikey_create' %}" class="btn btn-primary">Criar API Key</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function copyKey(key) {
+    navigator.clipboard.writeText(key).then(() => {
+        alert('API Key copiada para a área de transferência!');
+    });
+}
+</script>
+{% endblock %}

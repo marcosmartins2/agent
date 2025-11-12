@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ organization.name }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 {{ organization.name }}</h1>
+    <a href="{% url 'organizations:edit' organization.slug %}" class="btn btn-primary">Editar</a>
+</div>
+
+<div class="detail-container">
+    <div class="detail-section">
+        <h2>Informações</h2>
+        <dl>
+            <dt>Nome:</dt>
+            <dd>{{ organization.name }}</dd>
+            
+            <dt>Slug:</dt>
+            <dd><code>{{ organization.slug }}</code></dd>
+            
+            <dt>Proprietário:</dt>
+            <dd>{{ organization.owner.username }}</dd>
+            
+            <dt>Criado em:</dt>
+            <dd>{{ organization.created_at|date:"d/m/Y H:i" }}</dd>
+        </dl>
+    </div>
+
+    <div class="detail-section">
+        <h2>Agentes</h2>
+        {% with agents=organization.agents.all %}
+        {% if agents %}
+        <ul>
+            {% for agent in agents %}
+            <li>
+                <a href="{% url 'agents:detail' agent.slug %}">{{ agent.name }}</a>
+                - {{ agent.sector }}
+                {% if agent.is_active %}
+                <span class="badge badge-success">Ativo</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Nenhum agente cadastrado.</p>
+        {% endif %}
+        {% endwith %}
+        <a href="{% url 'agents:create' %}" class="btn btn-sm btn-success">+ Novo Agente</a>
+    </div>
+
+    <div class="detail-section">
+        <h2>API Keys</h2>
+        {% with api_keys=organization.api_keys.all %}
+        {% if api_keys %}
+        <ul>
+            {% for key in api_keys %}
+            <li>
+                <code>{{ key.key|slice:":20" }}...</code>
+                {% if key.is_active %}
+                <span class="badge badge-success">Ativa</span>
+                {% else %}
+                <span class="badge badge-danger">Inativa</span>
+                {% endif %}
+                - {{ key.created_at|date:"d/m/Y" }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Nenhuma API key cadastrada.</p>
+        {% endif %}
+        {% endwith %}
+        <a href="{% url 'organizations:apikey_create' %}" class="btn btn-sm btn-success">+ Nova API Key</a>
+    </div>
+</div>
+{% endblock %}

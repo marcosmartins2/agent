@@ -1,0 +1,216 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ agent.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            {{ agent.name }}
+        </h1>
+        <p style="color: var(--gray-600); font-size: 1.125rem; margin-top: var(--space-2);">{{ agent.description|truncatewords:20 }}</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'agents:edit' agent.slug %}" class="btn btn-primary">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Editar
+        </a>
+        <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-success">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Testar Agora
+        </a>
+        <a href="{% url 'agents:delete' agent.slug %}" class="btn btn-danger">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Excluir
+        </a>
+    </div>
+</div>
+
+<div class="detail-container">
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Informações Básicas
+        </h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Nome do Agente</label>
+                <p>{{ agent.name }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Função</label>
+                <p><span class="badge">{{ agent.role|upper }}</span></p>
+            </div>
+            <div class="detail-item">
+                <label>Tom de Voz</label>
+                <p><span class="badge badge-success">{{ agent.get_tone_display }}</span></p>
+            </div>
+            <div class="detail-item">
+                <label>Modelo de IA</label>
+                <p><code style="background: var(--beige-100); padding: var(--space-2) var(--space-3); border-radius: var(--radius-lg); font-size: 0.875rem; color: var(--gray-800);">{{ agent.model }}</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Descrição Detalhada
+        </h2>
+        <p style="color: var(--gray-700); line-height: 1.8; font-size: 1.0625rem;">{{ agent.description|default:"Sem descrição disponível." }}</p>
+    </div>
+
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+            Instruções do Sistema (System Prompt)
+        </h2>
+        <pre class="code-block">{{ agent.system_prompt|default:"Nenhuma instrução definida." }}</pre>
+    </div>
+
+    {% if agent.knowledge_base %}
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s backwards;">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            Base de Conhecimento
+        </h2>
+        <div class="knowledge-base-content">
+            {{ agent.knowledge_base|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+            Parâmetros do Modelo de IA
+        </h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>🌡️ Temperatura</label>
+                <div class="parameter-display">
+                    <span class="parameter-value">{{ agent.temperature }}</span>
+                    <div class="parameter-bar">
+                        <div class="parameter-fill" style="width: {{ agent.temperature|floatformat:0|add:'0' }}%;"></div>
+                    </div>
+                    <small style="color: var(--gray-500); font-size: 0.75rem; display: block; margin-top: var(--space-2);">Controla criatividade: 0=preciso, 1=criativo</small>
+                </div>
+            </div>
+            <div class="detail-item">
+                <label>📏 Max Tokens</label>
+                <div class="parameter-display">
+                    <span class="parameter-value">{{ agent.max_tokens }}</span>
+                    <small style="color: var(--gray-500); font-size: 0.75rem; display: block; margin-top: var(--space-2);">Tamanho máximo das respostas</small>
+                </div>
+            </div>
+            <div class="detail-item">
+                <label>🎯 Top P</label>
+                <div class="parameter-display">
+                    <span class="parameter-value">{{ agent.top_p }}</span>
+                    <div class="parameter-bar">
+                        <div class="parameter-fill" style="width: {{ agent.top_p|floatformat:0|add:'0' }}%;"></div>
+                    </div>
+                    <small style="color: var(--gray-500); font-size: 0.75rem; display: block; margin-top: var(--space-2);">Amostragem de vocabulário</small>
+                </div>
+            </div>
+            <div class="detail-item">
+                <label>🔁 Frequency Penalty</label>
+                <div class="parameter-display">
+                    <span class="parameter-value">{{ agent.frequency_penalty }}</span>
+                    <div class="parameter-bar">
+                        <div class="parameter-fill" style="width: {{ agent.frequency_penalty|floatformat:0|add:'0' }}%;"></div>
+                    </div>
+                    <small style="color: var(--gray-500); font-size: 0.75rem; display: block; margin-top: var(--space-2);">Evita repetições de palavras</small>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 2px solid var(--beige-200);">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--gray-700); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Comportamento do Agente
+            </h3>
+            <div class="detail-grid" style="grid-template-columns: 1fr;">
+                <div class="detail-item">
+                    <label>💬 Saudação Inicial</label>
+                    <p style="background: var(--beige-100); padding: var(--space-3); border-radius: var(--radius-lg); border-left: 3px solid var(--primary-500); font-style: italic; color: var(--gray-700);">{{ agent.greeting|default:"Nenhuma saudação definida." }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>📋 Diretrizes de Estilo</label>
+                    <p style="white-space: pre-wrap; line-height: 1.7; color: var(--gray-700);">{{ agent.style_guidelines|default:"Nenhuma diretriz definida." }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>❌ Mensagem de Fallback</label>
+                    <p style="background: var(--beige-100); padding: var(--space-3); border-radius: var(--radius-lg); color: var(--gray-700);">{{ agent.fallback_message|default:"Desculpe, não entendi." }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>📞 Regra de Escalonamento</label>
+                    <p style="color: var(--gray-700);">{{ agent.escalation_rule|default:"Nenhuma regra definida." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;">
+        <h2>
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Metadata
+        </h2>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Criado em</label>
+                <p>{{ agent.created_at|date:'d/m/Y às H:i' }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Última atualização</label>
+                <p>{{ agent.updated_at|date:'d/m/Y às H:i' }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Organização</label>
+                <p>{{ agent.organization.name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: var(--space-8); display: flex; gap: var(--space-3);">
+    <a href="{% url 'agents:list' %}" class="btn btn-secondary">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Voltar para Lista
+    </a>
+    <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-hero btn-success">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Testar no Playground
+    </a>
+</div>
+{% endblock %}

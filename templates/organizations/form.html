@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if organization %}Editar{% else %}Criar{% endif %} Organização{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>{% if organization %}Editar: {{ organization.name }}{% else %}Nova Organização{% endif %}</h1>
+    
+    <form method="post" class="form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">Nome da Organização: *</label>
+            <input type="text" name="name" id="name" value="{% if organization %}{{ organization.name }}{% endif %}" required autofocus>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">{% if organization %}Salvar{% else %}Criar{% endif %}</button>
+            <a href="{% url 'organizations:list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

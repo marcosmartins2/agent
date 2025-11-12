@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Deletar API Key{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Confirmar Exclusão</h1>
+    
+    <div class="alert alert-warning">
+        <strong>Atenção!</strong> Você está prestes a deletar a API Key:
+        <p><code>{{ api_key.key|slice:":24" }}...</code></p>
+        <p><strong>Organização:</strong> {{ api_key.organization.name }}</p>
+        <p>Integrações usando esta chave deixarão de funcionar. Esta ação não pode ser desfeita.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Sim, Deletar</button>
+            <a href="{% url 'organizations:apikeys' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

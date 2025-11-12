@@ -1,0 +1,125 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Playground - {{ agent.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎮 Playground: {{ agent.name }}</h1>
+    <a href="{% url 'agents:detail' agent.slug %}" class="btn btn-secondary">← Voltar</a>
+</div>
+
+<div class="playground-container">
+    <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h3> Olá! Eu sou {{ agent.name }}</h3>
+                <p>{{ agent.description }}</p>
+                <p class="hint">Digite sua mensagem abaixo para começar...</p>
+            </div>
+        </div>
+
+        <form id="chatForm" class="chat-form">
+            {% csrf_token %}
+            <input type="hidden" name="agent_id" value="{{ agent.pk }}">
+            <div class="input-group">
+                <textarea 
+                    name="message" 
+                    id="messageInput" 
+                    rows="3" 
+                    placeholder="Digite sua mensagem..."
+                    required
+                ></textarea>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                    </svg>
+                    Enviar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="agent-info">
+        <h3>ℹ Informações do Agente</h3>
+        <div class="info-item">
+            <label>Role:</label>
+            <span class="badge">{{ agent.role }}</span>
+        </div>
+        <div class="info-item">
+            <label>Tone:</label>
+            <span class="badge">{{ agent.tone }}</span>
+        </div>
+        <div class="info-item">
+            <label>Modelo:</label>
+            <p>{{ agent.model }}</p>
+        </div>
+        <div class="info-item">
+            <label>Temperatura:</label>
+            <p>{{ agent.temperature }}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const chatForm = document.getElementById('chatForm');
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (!message) return;
+    
+    // Adiciona mensagem do usuário
+    addMessage(message, 'user');
+    messageInput.value = '';
+    
+    // Mostra loading
+    const loadingDiv = addMessage('Pensando...', 'assistant', true);
+    
+    try {
+        const formData = new FormData(chatForm);
+        const response = await fetch('{% url "agents:playground" agent.slug %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const data = await response.json();
+        
+        // Remove loading
+        loadingDiv.remove();
+        
+        if (data.response) {
+            addMessage(data.response, 'assistant');
+        } else if (data.error) {
+            addMessage('Erro: ' + data.error, 'error');
+        }
+    } catch (error) {
+        loadingDiv.remove();
+        addMessage('Erro ao enviar mensagem', 'error');
+    }
+});
+
+function addMessage(text, type, isLoading = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message ' + type + (isLoading ? ' loading' : '');
+    messageDiv.textContent = text;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return messageDiv;
+}
+
+// Enter para enviar (Shift+Enter para nova linha)
+messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+    }
+});
+</script>
+{% endblock %}

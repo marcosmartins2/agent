@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Deletar Agente{% endblock %}
+
+{% block content %}
+<div class="form-container" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
+    <div style="text-align: center; margin-bottom: var(--space-8);">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--danger), #dc2626); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); box-shadow: var(--shadow-lg);">
+            <svg width="40" height="40" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+        </div>
+        <h1 style="font-size: 2rem; font-weight: 900; color: var(--gray-900); margin-bottom: var(--space-2);">Confirmar Exclusão</h1>
+        <p style="color: var(--gray-600); font-size: 1.125rem;">Esta ação é irreversível</p>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05)); border-left: 4px solid var(--danger); padding: var(--space-6); border-radius: var(--radius-xl); margin-bottom: var(--space-8);">
+        <div style="display: flex; gap: var(--space-4); align-items: start;">
+            <svg width="24" height="24" fill="none" stroke="var(--danger)" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink: 0; margin-top: 2px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+                <strong style="color: var(--danger); font-size: 1.0625rem; display: block; margin-bottom: var(--space-2);">Atenção!</strong>
+                <p style="color: var(--gray-700); margin-bottom: var(--space-3);">Você está prestes a deletar permanentemente o agente:</p>
+                <div style="background: white; padding: var(--space-4); border-radius: var(--radius-lg); margin-bottom: var(--space-3);">
+                    <p style="font-weight: 700; font-size: 1.125rem; color: var(--gray-900); margin-bottom: var(--space-1);">{{ agent.name }}</p>
+                    <p style="color: var(--gray-600); font-size: 0.9375rem;"><code>{{ agent.slug }}</code></p>
+                </div>
+                <p style="color: var(--danger); font-weight: 600;">⚠️ Esta ação não pode ser desfeita.</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: var(--space-3); justify-content: center;">
+            <a href="{% url 'agents:detail' agent.slug %}" class="btn btn-secondary" style="min-width: 150px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger" style="min-width: 150px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Sim, Deletar Permanentemente
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

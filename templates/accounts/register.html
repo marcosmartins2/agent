@@ -1,0 +1,93 @@
+{% extends 'base.html' %}{% extends 'base.html' %}
+
+
+
+{% block title %}Cadastro - SaaS Agentes IA{% endblock %}{% block title %}Registro - SaaS Agentes{% endblock %}
+
+
+
+{% block content %}{% block content %}
+
+<div class="auth-container"><div class="form-container">
+
+    <div class="auth-card">    <h1>Criar Conta</h1>
+
+        <h1>✨ Criar Conta</h1>    
+
+        <p>Comece a gerenciar seus agentes de IA agora</p>    <form method="post" class="form">
+
+                {% csrf_token %}
+
+        <form method="post" class="form">        
+
+            {% csrf_token %}        {% if form.errors %}
+
+                    <div class="alert alert-error">
+
+            <div class="form-group">            {% for field in form %}
+
+                <label for="username">Usuário *</label>                {% for error in field.errors %}
+
+                <input type="text" name="username" id="username" required autofocus>                    <p>{{ error }}</p>
+
+            </div>                {% endfor %}
+
+            {% endfor %}
+
+            <div class="form-group">        </div>
+
+                <label for="email">E-mail *</label>        {% endif %}
+
+                <input type="email" name="email" id="email" required>
+
+            </div>        <div class="form-group">
+
+            <label for="{{ form.username.id_for_label }}">Usuário:</label>
+
+            <div class="form-group">            {{ form.username }}
+
+                <label for="password1">Senha *</label>            {% if form.username.help_text %}
+
+                <input type="password" name="password1" id="password1" required>            <small>{{ form.username.help_text }}</small>
+
+            </div>            {% endif %}
+
+        </div>
+
+            <div class="form-group">
+
+                <label for="password2">Confirmar Senha *</label>        <div class="form-group">
+
+                <input type="password" name="password2" id="password2" required>            <label for="{{ form.password1.id_for_label }}">Senha:</label>
+
+            </div>            {{ form.password1 }}
+
+            {% if form.password1.help_text %}
+
+            <div class="form-actions">            <small>{{ form.password1.help_text }}</small>
+
+                <button type="submit" class="btn btn-success" style="width: 100%;">Criar Conta</button>            {% endif %}
+
+            </div>        </div>
+
+        </form>
+
+        <div class="form-group">
+
+        <p style="margin-top: 2rem; text-align: center;">            <label for="{{ form.password2.id_for_label }}">Confirmar Senha:</label>
+
+            Já tem uma conta? <a href="{% url 'accounts:login' %}">Faça login aqui</a>            {{ form.password2 }}
+
+        </p>        </div>
+
+    </div>
+
+</div>        <div class="form-actions">
+
+{% endblock %}            <button type="submit" class="btn btn-success">Criar Conta</button>
+
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Voltar ao Login</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
