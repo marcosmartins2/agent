@@ -9,5 +9,6 @@ urlpatterns = [
     path("<slug:slug>/", views.agent_detail, name="detail"),
     path("<slug:slug>/edit/", views.agent_edit, name="edit"),
     path("<slug:slug>/delete/", views.agent_delete, name="delete"),
+    path("<slug:slug>/delete-pdf/", views.agent_delete_pdf, name="delete_pdf"),
     path("<slug:slug>/playground/", views.agent_playground, name="playground"),
 ]

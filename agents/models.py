@@ -15,8 +15,12 @@ ROLE_CHOICES = [
     ('especialista', 'Especialista'),
 ]
 
-# Choices para Tom de Voz
+# Choices para Tom de Voz / Personalidade
 TONE_CHOICES = [
+    ('formal', 'Formal'),
+    ('casual', 'Casual'),
+    ('amigavel', 'Amigável'),
+    ('profissional', 'Profissional'),
     ('profissional_formal', 'Profissional e Formal'),
     ('amigavel_casual', 'Amigável e Casual'),
     ('objetivo_direto', 'Objetivo e Direto'),
@@ -27,10 +31,19 @@ TONE_CHOICES = [
     ('consultivo_educativo', 'Consultivo e Educativo'),
 ]
 
-# Defaults para manicure/pedicure
-DEFAULT_GREETING = """Olá {{cliente_nome}}! Eu sou {{agente_nome}}, atendente da Unhas Fast 💅. Como posso te ajudar hoje?"""
+# Choices para Status do Agente
+STATUS_CHOICES = [
+    ('ativo', 'Ativo'),
+    ('inativo', 'Inativo'),
+    ('manutencao', 'Em Manutenção'),
+]
 
-DEFAULT_TONE = "simpatico_acolhedor"
+# Defaults para manicure/pedicure
+DEFAULT_GREETING = """Olá! Eu sou {{agente_nome}}, como posso te ajudar hoje?"""
+
+DEFAULT_OUT_OF_HOURS_MESSAGE = """Olá! No momento estamos fora do horário de atendimento. Nosso horário de funcionamento é de Segunda a Sexta das 9h às 18h e Sábado das 9h às 14h. Deixe sua mensagem que retornaremos assim que possível!"""
+
+DEFAULT_TONE = "amigavel"
 
 DEFAULT_STYLE_GUIDELINES = """Use linguagem simples e amigável. Seja objetivo mas cordial. 
 Sempre confirme detalhes importantes como data, horário e serviço. 
@@ -158,17 +171,56 @@ class Agent(models.Model):
     )
     
     # Configuração de comportamento
-    is_active = models.BooleanField(default=True, verbose_name="Ativo")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ativo',
+        verbose_name="Status",
+        help_text="Status atual do agente"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Ativo (deprecated - usar status)")
+    
+    # Personalidade e Tom
+    personality = models.CharField(
+        max_length=50,
+        choices=TONE_CHOICES,
+        default=DEFAULT_TONE,
+        verbose_name="Personalidade/Tom",
+        help_text="Define o tom de voz e personalidade do agente"
+    )
+    
+    # Mensagens customizáveis
     greeting = models.TextField(
         default=DEFAULT_GREETING,
-        verbose_name="Saudação Inicial",
-        help_text="Use {{cliente_nome}} e {{agente_nome}} para personalização"
+        verbose_name="Mensagem de Boas-vindas",
+        help_text="Primeira mensagem enviada ao usuário. Use {{agente_nome}} para personalização"
     )
+    out_of_hours_message = models.TextField(
+        default=DEFAULT_OUT_OF_HOURS_MESSAGE,
+        verbose_name="Mensagem Fora do Horário",
+        help_text="Mensagem enviada quando fora do horário de atendimento"
+    )
+    
+    # Palavras-chave para transferência
+    transfer_keywords = models.TextField(
+        blank=True,
+        default="falar com humano, atendente, pessoa, reclamação, problema sério",
+        verbose_name="Palavras-chave de Transferência",
+        help_text="Palavras separadas por vírgula que acionam transferência para humano"
+    )
+    
+    # Tempo de resposta
+    max_response_time = models.IntegerField(
+        default=30,
+        verbose_name="Tempo Máximo de Resposta (segundos)",
+        help_text="Tempo máximo esperado para o agente responder"
+    )
+    
     tone = models.CharField(
         max_length=50,
         choices=TONE_CHOICES,
         default=DEFAULT_TONE,
-        verbose_name="Tom de Voz",
+        verbose_name="Tom de Voz (deprecated - usar personality)",
         help_text="Selecione o tom de voz do agente"
     )
     style_guidelines = models.TextField(
@@ -196,7 +248,26 @@ class Agent(models.Model):
         null=True,
         blank=True,
         verbose_name="PDF de Conhecimento",
-        help_text="Upload do PDF com informações do negócio (será extraído automaticamente)"
+        help_text="Upload do PDF com informações do negócio"
+    )
+    knowledge_pdf_text = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Texto Extraído do PDF",
+        help_text="Texto extraído automaticamente do PDF para busca e preview"
+    )
+    knowledge_pdf_category = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Categoria do PDF",
+        help_text="Ex: Produtos, FAQ, Políticas, Procedimentos"
+    )
+    knowledge_updated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Conhecimento Atualizado em",
+        help_text="Data da última atualização do conhecimento (PDF ou texto)"
     )
     
     # Tratamento de exceções
@@ -234,6 +305,8 @@ class Agent(models.Model):
         return f"{self.name} ({self.organization.name})"
 
     def save(self, *args, **kwargs):
+        from django.utils import timezone
+        
         if not self.slug:
             base_slug = slugify(self.name)
             slug = f"{base_slug}-{self.organization.slug}"
@@ -242,6 +315,20 @@ class Agent(models.Model):
         # Garantir business_hours default
         if not self.business_hours:
             self.business_hours = DEFAULT_BUSINESS_HOURS
+        
+        # Atualizar knowledge_updated_at se PDF ou knowledge_base mudou
+        if self.pk:
+            try:
+                old_instance = Agent.objects.get(pk=self.pk)
+                if (old_instance.knowledge_pdf != self.knowledge_pdf or 
+                    old_instance.knowledge_base != self.knowledge_base):
+                    self.knowledge_updated_at = timezone.now()
+            except Agent.DoesNotExist:
+                pass
+        else:
+            # Novo agente
+            if self.knowledge_pdf or self.knowledge_base != DEFAULT_KNOWLEDGE_BASE:
+                self.knowledge_updated_at = timezone.now()
             
         super().save(*args, **kwargs)
 

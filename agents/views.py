@@ -32,13 +32,19 @@ def agent_create(request):
         
         organization = get_object_or_404(Organization, id=org_id, owner=request.user)
         
-        # Criar agente
+        # Criar agente com novos campos
         agent = Agent.objects.create(
             organization=organization,
             name=name,
             role=role,
             sector=sector,
+            language=request.POST.get("language", "pt-BR"),
+            status=request.POST.get("status", "ativo"),
+            personality=request.POST.get("personality", "amigavel"),
             greeting=request.POST.get("greeting", ""),
+            out_of_hours_message=request.POST.get("out_of_hours_message", ""),
+            transfer_keywords=request.POST.get("transfer_keywords", "falar com humano, atendente, pessoa"),
+            max_response_time=int(request.POST.get("max_response_time", 30)),
             tone=request.POST.get("tone", ""),
             style_guidelines=request.POST.get("style_guidelines", ""),
             knowledge_base=request.POST.get("knowledge_base", ""),
@@ -51,18 +57,14 @@ def agent_create(request):
         if 'knowledge_pdf' in request.FILES:
             pdf_file = request.FILES['knowledge_pdf']
             agent.knowledge_pdf = pdf_file
+            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category", "")
             
             try:
-                # Extrair texto do PDF
+                # Extrair texto do PDF automaticamente
                 extracted_text = extract_text_from_pdf(pdf_file)
+                agent.knowledge_pdf_text = extracted_text
                 
-                # Adicionar ao knowledge_base existente
-                if agent.knowledge_base:
-                    agent.knowledge_base += "\n\n---\n\n# Conhecimento Extra\u00eddo do PDF\n\n" + extracted_text
-                else:
-                    agent.knowledge_base = extracted_text
-                    
-                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extra\u00eddos.")
+                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extraídos.")
             except Exception as e:
                 messages.warning(request, f"Erro ao processar PDF: {str(e)}")
             
@@ -93,9 +95,16 @@ def agent_edit(request, slug):
         agent.name = request.POST.get("name", agent.name)
         agent.role = request.POST.get("role", agent.role)
         agent.sector = request.POST.get("sector", agent.sector)
+        agent.language = request.POST.get("language", agent.language)
+        agent.status = request.POST.get("status", agent.status)
+        agent.personality = request.POST.get("personality", agent.personality)
         agent.greeting = request.POST.get("greeting", agent.greeting)
+        agent.out_of_hours_message = request.POST.get("out_of_hours_message", agent.out_of_hours_message)
+        agent.transfer_keywords = request.POST.get("transfer_keywords", agent.transfer_keywords)
+        agent.max_response_time = int(request.POST.get("max_response_time", agent.max_response_time))
         agent.tone = request.POST.get("tone", agent.tone)
         agent.style_guidelines = request.POST.get("style_guidelines", agent.style_guidelines)
+        agent.knowledge_base = request.POST.get("knowledge_base", agent.knowledge_base)
         agent.fallback_message = request.POST.get("fallback_message", agent.fallback_message)
         agent.escalation_rule = request.POST.get("escalation_rule", agent.escalation_rule)
         agent.n8n_webhook_url = request.POST.get("n8n_webhook_url", agent.n8n_webhook_url)
@@ -105,20 +114,20 @@ def agent_edit(request, slug):
         if 'knowledge_pdf' in request.FILES:
             pdf_file = request.FILES['knowledge_pdf']
             agent.knowledge_pdf = pdf_file
+            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category", agent.knowledge_pdf_category)
             
             try:
-                # Extrair texto do PDF
+                # Extrair texto do PDF automaticamente
                 extracted_text = extract_text_from_pdf(pdf_file)
-                
-                # Adicionar ao knowledge_base existente
-                if agent.knowledge_base:
-                    agent.knowledge_base += "\n\n---\n\n# Conhecimento Extra\u00eddo do PDF\n\n" + extracted_text
-                else:
-                    agent.knowledge_base = extracted_text
+                agent.knowledge_pdf_text = extracted_text
                     
-                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extra\u00eddos.")
+                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extraídos.")
             except Exception as e:
                 messages.warning(request, f"Erro ao processar PDF: {str(e)}")
+        
+        # Atualizar categoria do PDF sem fazer novo upload
+        elif request.POST.get("knowledge_pdf_category"):
+            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category")
         
         agent.save()
         
@@ -178,3 +187,36 @@ def agent_playground(request, slug):
     }
     
     return render(request, "agents/playground.html", context)
+
+
+@login_required
+def agent_delete_pdf(request, slug):
+    """Deletar PDF de conhecimento do agente."""
+    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    
+    if request.method == "POST":
+        if agent.knowledge_pdf:
+            # Deletar arquivo físico
+            agent.knowledge_pdf.delete(save=False)
+            # Limpar campos relacionados
+            agent.knowledge_pdf_text = ""
+            agent.knowledge_pdf_category = ""
+            agent.save()
+            
+            AuditLog.log(
+                action="delete_pdf",
+                entity="Agent",
+                organization=agent.organization,
+                actor=request.user,
+                entity_id=agent.id,
+                diff={"agent": agent.name, "action": "PDF deletado"}
+            )
+            
+            messages.success(request, "PDF deletado com sucesso!")
+        else:
+            messages.warning(request, "Este agente não possui PDF.")
+        
+        return redirect("agents:detail", slug=agent.slug)
+    
+    return render(request, "agents/confirm_delete_pdf.html", {"agent": agent})
+
