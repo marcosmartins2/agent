@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.utils.text import slugify
 from organizations.models import Organization
