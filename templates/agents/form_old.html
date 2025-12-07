@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if agent %}Editar{% else %}Criar{% endif %} Agente{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>
+            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                {% if agent %}
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                {% else %}
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                {% endif %}
+            </svg>
+            {% if agent %}Editar Agente: {{ agent.name }}{% else %}Criar Novo Agente{% endif %}
+        </h1>
+        <p style="color: var(--gray-600); font-size: 1.125rem; margin-top: var(--space-2);">
+            {% if agent %}Atualize as configurações do seu agente de IA{% else %}Configure um novo agente de IA personalizado{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        
+        {% if not agent %}
+        <div class="info-box">
+            <h3 class="info-box-title">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Informações Básicas
+            </h3>
+            <div class="form-group">
+                <label for="organization">Organização *</label>
+                <select name="organization" id="organization" required>
+                    <option value="">Selecione uma organização...</option>
+                    {% for org in organizations %}
+                    <option value="{{ org.id }}">{{ org.name }}</option>
+                    {% endfor %}
+                </select>
+                <small class="form-helper">Este agente pertencerá a esta organização</small>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="display: grid; gap: var(--space-6);">
+            <div class="form-group">
+                <label for="name">Nome do Agente *</label>
+                <input type="text" name="name" id="name" value="{% if agent %}{{ agent.name }}{% endif %}" required placeholder="Ex: Assistente de Vendas">
+                <small class="form-helper">Como o agente será identificado</small>
+            </div>
+
+            <div class="form-row-2cols">
+                <div class="form-group">
+                    <label for="role">Função *</label>
+                    <select name="role" id="role" required>
+                        <option value="atendente" {% if agent.role == 'atendente' %}selected{% endif %}>Atendente</option>
+                        <option value="recepcionista" {% if agent.role == 'recepcionista' %}selected{% endif %}>Recepcionista</option>
+                        <option value="consultor" {% if agent.role == 'consultor' %}selected{% endif %}>Consultor(a)</option>
+                        <option value="vendedor" {% if agent.role == 'vendedor' %}selected{% endif %}>Vendedor(a)</option>
+                        <option value="suporte" {% if agent.role == 'suporte' %}selected{% endif %}>Suporte Técnico</option>
+                        <option value="assistente" {% if agent.role == 'assistente' %}selected{% endif %}>Assistente Virtual</option>
+                        <option value="gerente" {% if agent.role == 'gerente' %}selected{% endif %}>Gerente</option>
+                        <option value="especialista" {% if agent.role == 'especialista' %}selected{% endif %}>Especialista</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="sector">Setor</label>
+                    <select name="sector" id="sector">
+                        <option value="">Selecione um setor...</option>
+                        <option value="manicure" {% if agent.sector == 'manicure' %}selected{% endif %}>Manicure</option>
+                        <option value="pedicure" {% if agent.sector == 'pedicure' %}selected{% endif %}>Pedicure</option>
+                        <option value="manicure/pedicure" {% if agent.sector == 'manicure/pedicure' %}selected{% endif %}>Manicure/Pedicure</option>
+                        <option value="design de unhas" {% if agent.sector == 'design de unhas' %}selected{% endif %}>Design de Unhas</option>
+                        <option value="unhas artísticas" {% if agent.sector == 'unhas artísticas' %}selected{% endif %}>Unhas Artísticas</option>
+                        <option value="alongamento" {% if agent.sector == 'alongamento' %}selected{% endif %}>Alongamento</option>
+                        <option value="spa de mãos e pés" {% if agent.sector == 'spa de mãos e pés' %}selected{% endif %}>Spa de Mãos e Pés</option>
+                        <option value="atendimento" {% if agent.sector == 'atendimento' %}selected{% endif %}>Atendimento</option>
+                        <option value="recepção" {% if agent.sector == 'recepção' %}selected{% endif %}>Recepção</option>
+                        <option value="vendas" {% if agent.sector == 'vendas' %}selected{% endif %}>Vendas</option>
+                        <option value="agendamento" {% if agent.sector == 'agendamento' %}selected{% endif %}>Agendamento</option>
+                    </select>
+                    <small class="form-helper">Departamento ou área de atuação do agente</small>
+                </div>
+            </div>
+
+            {% if agent %}
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="is_active" id="is_active" {% if agent.is_active %}checked{% endif %} class="custom-checkbox">
+                    <span class="checkbox-custom"></span>
+                    <div class="checkbox-text">
+                        <strong>Agente Ativo</strong>
+                        <small>- Quando ativo, o agente pode receber conversas</small>
+                    </div>
+                </label>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="greeting">Saudação Inicial</label>
+                <textarea name="greeting" id="greeting" rows="3" placeholder="Olá! Como posso ajudar você hoje?">{% if agent %}{{ agent.greeting }}{% else %}Olá {{cliente_nome}}! Eu sou {{agente_nome}}, atendente da Unhas Fast 💅. Como posso te ajudar hoje?{% endif %}</textarea>
+                <small class="form-helper">💡 Use <code class="code-tag">{% verbatim %}{{cliente_nome}}{% endverbatim %}</code> e <code class="code-tag">{% verbatim %}{{agente_nome}}{% endverbatim %}</code> para personalização dinâmica</small>
+            </div>
+
+            <div class="form-group">
+                <label for="tone">Tom de Voz *</label>
+                <select name="tone" id="tone" required>
+                    <option value="profissional_formal" {% if agent and agent.tone == 'profissional_formal' %}selected{% endif %}>Profissional e Formal</option>
+                    <option value="amigavel_casual" {% if agent and agent.tone == 'amigavel_casual' %}selected{% endif %}>Amigável e Casual</option>
+                    <option value="objetivo_direto" {% if agent and agent.tone == 'objetivo_direto' %}selected{% endif %}>Objetivo e Direto</option>
+                    <option value="simpatico_acolhedor" {% if not agent or agent.tone == 'simpatico_acolhedor' %}selected{% endif %}>Simpático e Acolhedor</option>
+                    <option value="energetico_entusiasmado" {% if agent and agent.tone == 'energetico_entusiasmado' %}selected{% endif %}>Energético e Entusiasmado</option>
+                    <option value="calmo_paciente" {% if agent and agent.tone == 'calmo_paciente' %}selected{% endif %}>Calmo e Paciente</option>
+                    <option value="tecnico_detalhista" {% if agent and agent.tone == 'tecnico_detalhista' %}selected{% endif %}>Técnico e Detalhista</option>
+                    <option value="consultivo_educativo" {% if agent and agent.tone == 'consultivo_educativo' %}selected{% endif %}>Consultivo e Educativo</option>
+                </select>
+                <small class="form-helper">Escolha o estilo de comunicação do agente</small>
+            </div>
+
+            <div class="form-group">
+                <label for="style_guidelines">Diretrizes de Estilo</label>
+                <textarea name="style_guidelines" id="style_guidelines" rows="4" placeholder="Use linguagem simples e amigável. Seja objetivo mas cordial.">{% if agent %}{{ agent.style_guidelines }}{% else %}Use linguagem simples e amigável. Seja objetivo mas cordial.{% endif %}</textarea>
+                <small class="form-helper">Instruções sobre como o agente deve se comunicar</small>
+            </div>
+
+            <div class="form-group">
+                <label for="knowledge_pdf">Upload PDF de Conhecimento</label>
+                <input type="file" name="knowledge_pdf" id="knowledge_pdf" accept=".pdf">
+                {% if agent and agent.knowledge_pdf %}
+                <div style="margin-top: var(--space-3); padding: var(--space-3); background: var(--primary-50); border-radius: var(--radius-md); display: flex; align-items: center; gap: var(--space-2);">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span style="color: var(--primary-700); font-weight: 500;">{{ agent.knowledge_pdf.name }}</span>
+                </div>
+                {% endif %}
+                <small class="form-helper">📄 O PDF será enviado automaticamente para o N8N quando salvar</small>
+            </div>
+
+            <div class="form-group">
+                <label for="n8n_webhook_url">Webhook N8N (Opcional)</label>
+                <input type="url" name="n8n_webhook_url" id="n8n_webhook_url" value="{% if agent %}{{ agent.n8n_webhook_url }}{% endif %}" placeholder="https://seu-n8n.com/webhook/agent-updated">
+                <small class="form-helper">🔔 URL do webhook do N8N para receber notificações quando o agente for atualizado (especialmente quando fizer upload de PDF)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="fallback_message">Mensagem de Fallback</label>
+                <textarea name="fallback_message" id="fallback_message" rows="2" placeholder="Desculpe, não entendi. Pode reformular?">{% if agent %}{{ agent.fallback_message }}{% else %}Desculpe, não entendi. Pode reformular?{% endif %}</textarea>
+                <small class="form-helper">Mensagem quando o agente não entende a solicitação</small>
+            </div>
+
+            <div class="form-group">
+                <label for="escalation_rule">Regra de Escalonamento</label>
+                <textarea name="escalation_rule" id="escalation_rule" rows="3" placeholder="Transferir para atendente humano quando cliente solicitar.">{% if agent %}{{ agent.escalation_rule }}{% else %}Transferir para atendente humano quando cliente solicitar.{% endif %}</textarea>
+                <small class="form-helper">Quando e como transferir para atendimento humano</small>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-8); padding-top: var(--space-6); border-top: 2px solid var(--gray-100);">
+            <a href="{% url 'agents:list' %}" class="btn btn-secondary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                {% if agent %}Salvar Alterações{% else %}Criar Agente{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,37 +1,49 @@
-﻿{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %}
 
-{% block title %}Playground - {{ agent.name }}{% endblock %}
+{% block title %}Playground - {{ agent.name }} - PanDia{% endblock %}
+{% block page_title %}Playground do Agente{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>🎮 Playground: {{ agent.name }}</h1>
-    <a href="{% url 'agents:detail' agent.slug %}" class="btn btn-secondary">← Voltar</a>
-</div>
+<a href="{% url 'agents:detail' agent.slug %}" class="back-link">
+    ← Voltar para agente
+</a>
 
-<div class="playground-container">
-    <div class="chat-container">
-        <div class="chat-messages" id="chatMessages">
-            <div class="welcome-message">
-                <h3> Olá! Eu sou {{ agent.name }}</h3>
-                <p>{{ agent.description }}</p>
-                <p class="hint">Digite sua mensagem abaixo para começar...</p>
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; height: calc(100vh - 250px);">
+    <!-- Chat Area -->
+    <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--gray-200);">
+            <h2 style="font-size: 1.25rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                </div>
+                Testando: {{ agent.name }}
+            </h2>
+        </div>
+
+        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 1.5rem; background: var(--gray-50);">
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 1rem;">
+                <p style="color: var(--gray-900); font-weight: 600; margin-bottom: 0.5rem;">👋 Bem-vindo ao Playground!</p>
+                <p style="color: var(--gray-600); font-size: 0.875rem; margin: 0;">Teste seu agente digitando uma mensagem abaixo. Este é um ambiente seguro para experimentar respostas.</p>
             </div>
         </div>
 
-        <form id="chatForm" class="chat-form">
+        <form id="chatForm" style="padding: 1.5rem; border-top: 1px solid var(--gray-200); background: white;">
             {% csrf_token %}
             <input type="hidden" name="agent_id" value="{{ agent.pk }}">
-            <div class="input-group">
+            <div style="display: flex; gap: 0.75rem;">
                 <textarea 
                     name="message" 
                     id="messageInput" 
-                    rows="3" 
+                    rows="2" 
                     placeholder="Digite sua mensagem..."
+                    class="form-textarea"
+                    style="resize: none; flex: 1;"
                     required
                 ></textarea>
-                <button type="submit" class="btn btn-primary">
-                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <button type="submit" class="btn btn-primary" style="align-self: flex-end;">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
                     </svg>
                     Enviar
@@ -40,26 +52,109 @@
         </form>
     </div>
 
-    <div class="agent-info">
-        <h3>ℹ Informações do Agente</h3>
-        <div class="info-item">
-            <label>Role:</label>
-            <span class="badge">{{ agent.role }}</span>
-        </div>
-        <div class="info-item">
-            <label>Tone:</label>
-            <span class="badge">{{ agent.tone }}</span>
-        </div>
-        <div class="info-item">
-            <label>Modelo:</label>
-            <p>{{ agent.model }}</p>
-        </div>
-        <div class="info-item">
-            <label>Temperatura:</label>
-            <p>{{ agent.temperature }}</p>
+    <!-- Agent Info Sidebar -->
+    <div class="card" style="height: 100%; overflow-y: auto;">
+        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Informações do Agente
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Nome</label>
+                <p style="color: var(--gray-900); font-weight: 600;">{{ agent.name }}</p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Função</label>
+                <p><span class="badge" style="background: #3b82f6; color: white;">{{ agent.role }}</span></p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Tom</label>
+                <p style="color: var(--gray-900);">{{ agent.tone }}</p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Idioma</label>
+                <p style="color: var(--gray-900);">{{ agent.language }}</p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Status</label>
+                <p>
+                    {% if agent.status == 'Ativo' %}
+                        <span class="badge badge-success">Ativo</span>
+                    {% else %}
+                        <span class="badge" style="background: var(--gray-400); color: white;">Inativo</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            {% if agent.greeting %}
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Saudação</label>
+                <p style="background: var(--gray-50); padding: 0.75rem; border-radius: 6px; font-size: 0.875rem; color: var(--gray-700); font-style: italic;">
+                    {{ agent.greeting }}
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<style>
+.chat-message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    max-width: 80%;
+    animation: slideIn 0.3s ease;
+}
+
+.chat-message.user {
+    background: linear-gradient(135deg, #f59e0b, #ea8a08);
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-message.assistant {
+    background: white;
+    color: var(--gray-900);
+    border: 1px solid var(--gray-200);
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-message.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.chat-message.loading {
+    background: var(--gray-200);
+    color: var(--gray-600);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+</style>
 
 <script>
 const chatForm = document.getElementById('chatForm');
@@ -72,12 +167,12 @@ chatForm.addEventListener('submit', async (e) => {
     const message = messageInput.value.trim();
     if (!message) return;
     
-    // Adiciona mensagem do usuário
+    // Add user message
     addMessage(message, 'user');
     messageInput.value = '';
     
-    // Mostra loading
-    const loadingDiv = addMessage('Pensando...', 'assistant', true);
+    // Show loading
+    const loadingDiv = addMessage('Pensando...', 'loading');
     
     try {
         const formData = new FormData(chatForm);
@@ -105,16 +200,16 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-function addMessage(text, type, isLoading = false) {
+function addMessage(text, type) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message ' + type + (isLoading ? ' loading' : '');
+    messageDiv.className = 'chat-message ' + type;
     messageDiv.textContent = text;
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return messageDiv;
 }
 
-// Enter para enviar (Shift+Enter para nova linha)
+// Enter to send (Shift+Enter for new line)
 messageInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();

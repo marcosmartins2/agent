@@ -1,22 +1,56 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if organization %}Editar{% else %}Criar{% endif %} Organização{% endblock %}
+{% block title %}{% if organization %}Editar{% else %}Criar{% endif %} Organização - PanDia{% endblock %}
+{% block page_title %}{% if organization %}Editar Organização{% else %}Criar Organização{% endif %}{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h1>{% if organization %}Editar: {{ organization.name }}{% else %}Nova Organização{% endif %}</h1>
+<a href="{% url 'organizations:list' %}" class="back-link">
+    ← Voltar para organizações
+</a>
+
+<div class="card" style="max-width: 600px;">
+    <h2 class="content-title">{% if organization %}Editar Organização{% else %}Criar Nova Organização{% endif %}</h2>
     
-    <form method="post" class="form">
+    <form method="post">
         {% csrf_token %}
         
         <div class="form-group">
-            <label for="name">Nome da Organização: *</label>
-            <input type="text" name="name" id="name" value="{% if organization %}{{ organization.name }}{% endif %}" required autofocus>
+            <label class="form-label" for="name">Nome da Organização</label>
+            <input 
+                type="text" 
+                name="name" 
+                id="name" 
+                class="form-input"
+                value="{% if organization %}{{ organization.name }}{% endif %}" 
+                required 
+                autofocus
+                placeholder="Minha Organização"
+            >
         </div>
 
-        <div class="form-actions">
-            <button type="submit" class="btn btn-success">{% if organization %}Salvar{% else %}Criar{% endif %}</button>
-            <a href="{% url 'organizations:list' %}" class="btn btn-secondary">Cancelar</a>
+        {% if organization %}
+        <div class="form-group">
+            <label class="form-label" for="slug">Slug (identificador na URL)</label>
+            <input 
+                type="text" 
+                name="slug" 
+                id="slug" 
+                class="form-input"
+                value="{{ organization.slug }}" 
+                readonly
+                style="background-color: var(--gray-100); cursor: not-allowed;"
+            >
+            <p class="form-help">Usado nas URLs. Não pode ser alterado após criação.</p>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">
+                {% if organization %}Atualizar{% else %}Criar{% endif %}
+            </button>
+            <a href="{% url 'organizations:list' %}" class="btn btn-secondary">
+                Cancelar
+            </a>
         </div>
     </form>
 </div>

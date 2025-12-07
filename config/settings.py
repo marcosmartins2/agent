@@ -19,6 +19,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-change-in-producti
 DEBUG = os.getenv("DEBUG", "1") == "1"
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()] if not DEBUG else ["*"]
+ALLOWED_HOSTS.append("petra-nonlogistical-freeman.ngrok-free.dev")
+CSRF_TRUSTED_ORIGINS = ["https://petra-nonlogistical-freeman.ngrok-free.dev"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -49,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "accounts.middleware.LoginRequiredMiddleware",  # Força login em todas as páginas
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -140,9 +143,14 @@ CSRF_TRUSTED_ORIGINS = []
 if csrf_origins:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
 
-# Adicionar ngrok URL
+# Adicionar ngrok URLs (aceitar qualquer subdomínio ngrok em desenvolvimento)
 if DEBUG:
-    CSRF_TRUSTED_ORIGINS.append("https://petra-nonlogistical-freeman.ngrok-free.dev")
+    # Aceitar qualquer URL do ngrok
+    CSRF_TRUSTED_ORIGINS.extend([
+        "https://*.ngrok-free.app",
+        "https://*.ngrok.io",
+        "https://*.ngrok-free.dev",
+    ])
 
 # Cache configuration (para rate limiting)
 CACHES = {

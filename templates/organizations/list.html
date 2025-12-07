@@ -1,47 +1,63 @@
 ﻿{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Organizações{% endblock %}
+{% block title %}Organizações - PanDia{% endblock %}
+{% block page_title %}Organizações{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1> Organizações</h1>
-    <a href="{% url 'organizations:create' %}" class="btn btn-primary"> Nova Organização</a>
+<div class="content-header">
+    <div>
+        <h2 class="content-title">Organizações</h2>
+        <p class="content-subtitle">Gerencie suas organizações e equipes</p>
+    </div>
+    <a href="{% url 'organizations:create' %}" class="btn btn-primary">
+        + Criar Organização
+    </a>
 </div>
 
-<div class="table-container">
-    {% if organizations %}
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Descrição</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for org in organizations %}
-                <tr>
-                    <td><strong>{{ org.name }}</strong></td>
-                    <td>{{ org.description|truncatewords:15 }}</td>
-                    <td class="action-buttons">
-                        <a href="{% url 'organizations:detail' org.slug %}" class="btn btn-sm btn-secondary">Ver</a>
-                        <a href="{% url 'organizations:edit' org.slug %}" class="btn btn-sm btn-primary">Editar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <div class="empty-state">
-            <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3z"/>
-                <path d="M11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5z"/>
-            </svg>
-            <h3>Nenhuma organização criada</h3>
-            <p>Comece criando sua primeira organização</p>
-            <a href="{% url 'organizations:create' %}" class="btn btn-primary">Criar Organização</a>
+{% if organizations %}
+    {% for org in organizations %}
+    <div class="list-item">
+        <div class="list-item-content">
+            <h3 class="list-item-title">{{ org.name }}</h3>
+            <div class="list-item-meta">
+                <span>Slug: {{ org.slug }}</span>
+                <span>Criado em {{ org.created_at|date:"d/m/Y" }}</span>
+            </div>
         </div>
-    {% endif %}
-</div>
+        <div class="list-item-actions">
+            <a href="{% url 'organizations:detail' org.slug %}" class="btn-icon btn-icon-blue" title="Visualizar">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+            </a>
+            <a href="{% url 'organizations:edit' org.slug %}" class="btn-icon btn-icon-orange" title="Editar">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+            </a>
+            <a href="{% url 'organizations:delete' org.slug %}" class="btn-icon btn-icon-red" title="Excluir">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h3 class="empty-state-title">Nenhuma organização ainda</h3>
+        <p class="empty-state-text">Crie sua primeira organização para começar</p>
+        <a href="{% url 'organizations:create' %}" class="btn btn-primary">
+            + Criar Organização
+        </a>
+    </div>
+{% endif %}
 {% endblock %}

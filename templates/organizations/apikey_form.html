@@ -1,148 +1,113 @@
 {% extends 'base.html' %}
 
-{% block title %}Nova API Key{% endblock %}
+{% block title %}Criar Chave API - PanDia{% endblock %}
+{% block page_title %}Criar Chave API{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1>
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+<a href="{% url 'organizations:apikeys' %}" class="back-link">
+    ← Voltar para Chaves API
+</a>
+
+{% if new_key %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fb923c, #f59e0b); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+            <svg width="40" height="40" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Criar Nova API Key
-        </h1>
-        <p style="color: var(--gray-600); font-size: 1.125rem; margin-top: var(--space-2);">Gere uma chave de API para integração com sua aplicação</p>
+        </div>
+        <h2 class="content-title">Chave API Criada com Sucesso!</h2>
+        <p style="color: #ef4444; font-weight: 600; margin-top: 1rem;">⚠️ IMPORTANTE: Copie esta chave agora! Ela não será exibida novamente.</p>
+    </div>
+    
+    <div style="background: var(--gray-900); color: #f9a8d4; padding: 1.5rem; border-radius: 12px; font-family: monospace; font-size: 1rem; letter-spacing: 1px; word-break: break-all; margin: 2rem 0; text-align: center;">
+        {{ new_key }}
+    </div>
+
+    <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 12px; margin-top: 2rem;">
+        <h4 style="color: var(--gray-900); font-size: 1.125rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+            Como usar no n8n
+        </h4>
+        
+        <ol style="color: var(--gray-700); line-height: 1.8; margin-left: 1.5rem;">
+            <li style="margin-bottom: 0.75rem;"><strong>No n8n:</strong> Adicione um nó HTTP Request</li>
+            <li style="margin-bottom: 0.75rem;"><strong>URL:</strong> <code style="background: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem;">{{ request.scheme }}://{{ request.get_host }}/api/chat/</code></li>
+            <li style="margin-bottom: 0.75rem;"><strong>Método:</strong> POST</li>
+            <li style="margin-bottom: 0.75rem;"><strong>Cabeçalhos:</strong>
+                <pre style="background: white; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.875rem; overflow-x: auto; border: 1px solid var(--gray-200);">Authorization: Bearer {{ new_key }}
+Content-Type: application/json</pre>
+            </li>
+            <li style="margin-bottom: 0.75rem;"><strong>Corpo (JSON):</strong>
+                <pre style="background: white; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.875rem; overflow-x: auto; border: 1px solid var(--gray-200);">{
+  "agent_slug": "your-agent",
+  "message": "Hello, I want to schedule an appointment",
+  "session_id": "optional-session-id"
+}</pre>
+            </li>
+        </ol>
+
+        <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin-top: 1rem; border-left: 3px solid #f59e0b;">
+            <p style="color: #92400e; font-size: 0.9375rem; margin: 0;">
+                <strong>💡 Dica:</strong> Use <code style="background: white; padding: 2px 6px; border-radius: 4px;">session_id</code> para manter contexto entre mensagens na mesma conversa.
+            </p>
+        </div>
+    </div>
+    
+    <div style="margin-top: 2rem; text-align: center;">
+        <a href="{% url 'organizations:apikeys' %}" class="btn btn-primary">
+            Voltar para Minhas Chaves
+        </a>
     </div>
 </div>
-
-<div class="form-container">
-    {% if new_key %}
-    <div style="background: linear-gradient(135deg, rgba(209, 250, 229, 0.5), rgba(167, 243, 208, 0.3)); border: 2px solid var(--success); border-radius: var(--radius-2xl); padding: var(--space-8); animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
-        <div style="text-align: center; margin-bottom: var(--space-8);">
-            <h3 style="color: var(--success-dark); margin-bottom: var(--space-6); font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: var(--space-2);">
-                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                API Key Criada com Sucesso!
-            </h3>
-            
-            <p style="color: var(--gray-700); margin-bottom: var(--space-6); font-size: 1.0625rem;">
-                <strong style="color: var(--danger);">⚠️ IMPORTANTE:</strong> Copie esta chave agora! Ela não será exibida novamente.
-            </p>
-            
-            <code style="display: block; background: var(--gray-900); color: #f9a8d4; padding: var(--space-6); border-radius: var(--radius-xl); font-size: 1rem; letter-spacing: 1px; word-break: break-all; margin: var(--space-6) 0; font-family: 'Consolas', 'Monaco', monospace; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">{{ new_key }}</code>
-        </div>
-
-        <!-- Como usar -->
-        <div style="background: white; padding: var(--space-6); border-radius: var(--radius-xl); margin-top: var(--space-6); border: 2px solid var(--beige-200);">
-            <h4 style="color: var(--gray-900); font-size: 1.125rem; margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                </svg>
-                Como usar no n8n
-            </h4>
-            
-            <ol style="color: var(--gray-700); line-height: 1.8; margin-left: var(--space-6);">
-                <li style="margin-bottom: var(--space-3);"><strong>No n8n:</strong> Adicione um nó HTTP Request</li>
-                <li style="margin-bottom: var(--space-3);"><strong>URL:</strong> <code style="background: var(--beige-100); padding: var(--space-1) var(--space-2); border-radius: var(--radius-md); font-size: 0.875rem;">{{ request.scheme }}://{{ request.get_host }}/api/chat/</code></li>
-                <li style="margin-bottom: var(--space-3);"><strong>Método:</strong> POST</li>
-                <li style="margin-bottom: var(--space-3);"><strong>Headers:</strong>
-                    <pre style="background: var(--gray-900); color: #f9a8d4; padding: var(--space-4); border-radius: var(--radius-lg); margin-top: var(--space-2); font-size: 0.875rem; overflow-x: auto;">Authorization: Bearer {{ new_key }}
-Content-Type: application/json</pre>
-                </li>
-                <li style="margin-bottom: var(--space-3);"><strong>Body (JSON):</strong>
-                    <pre style="background: var(--gray-900); color: #f9a8d4; padding: var(--space-4); border-radius: var(--radius-lg); margin-top: var(--space-2); font-size: 0.875rem; overflow-x: auto;">{
-  "agent_slug": "seu-agente",
-  "message": "Olá, quero agendar uma manicure",
-  "session_id": "opcional-id-sessao"
-}</pre>
-                </li>
-            </ol>
-
-            <div style="background: linear-gradient(135deg, var(--primary-50), var(--rose-50)); padding: var(--space-4); border-radius: var(--radius-lg); margin-top: var(--space-4); border-left: 3px solid var(--primary-500);">
-                <p style="color: var(--gray-700); font-size: 0.9375rem; margin: 0;">
-                    <strong>💡 Dica:</strong> Use o <code style="background: white; padding: 2px 6px; border-radius: 4px;">session_id</code> para manter contexto entre mensagens da mesma conversa.
-                </p>
-            </div>
-        </div>
-        
-        <div style="margin-top: var(--space-8); text-align: center;">
-            <a href="{% url 'organizations:apikeys' %}" class="btn btn-success" style="padding: var(--space-4) var(--space-8);">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                </svg>
-                Voltar para Minhas Keys
-            </a>
-        </div>
+{% else %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2 class="content-title">Criar Nova Chave API</h2>
+    <p class="content-subtitle">Gere uma chave API para integrar com sua aplicação</p>
+    
+    <div style="background: #fef3c7; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border-left: 4px solid #f59e0b;">
+        <h3 style="color: #92400e; font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Para que serve uma Chave API?
+        </h3>
+        <p style="color: #92400e; line-height: 1.6; font-size: 0.9375rem;">
+            A Chave API permite que você <strong>conecte seus agentes de IA a ferramentas externas</strong> como n8n, Zapier, Make.com ou sua própria aplicação. 
+            Com ela, você pode enviar mensagens para os agentes e receber respostas, mantendo todas as conversas registradas na plataforma.
+        </p>
     </div>
-    {% else %}
-    <form method="post" class="form">
+
+    <form method="post">
         {% csrf_token %}
         
-        <div class="info-box" style="margin-bottom: var(--space-8);">
-            <h3 class="info-box-title">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                Para que serve a API Key?
-            </h3>
-            <p style="color: var(--gray-700); line-height: 1.8; margin-top: var(--space-4); font-size: 1rem;">
-                A API Key permite que você <strong>conecte seus agentes de IA em ferramentas externas</strong> como n8n, Zapier, Make.com, ou sua própria aplicação. 
-                Com ela, você pode enviar mensagens para os agentes e receber respostas, mantendo todas as conversas registradas aqui na plataforma.
-            </p>
-            
-            <div style="background: linear-gradient(135deg, var(--primary-50), white); padding: var(--space-5); border-radius: var(--radius-xl); margin-top: var(--space-4); border-left: 3px solid var(--primary-500);">
-                <h4 style="color: var(--gray-900); font-size: 0.9375rem; font-weight: 700; margin-bottom: var(--space-3);">
-                    🔗 Casos de Uso:
-                </h4>
-                <ul style="color: var(--gray-700); line-height: 1.8; margin-left: var(--space-6);">
-                    <li>Integrar com WhatsApp via n8n</li>
-                    <li>Conectar ao Telegram ou Discord</li>
-                    <li>Criar chatbot no seu site</li>
-                    <li>Automatizar atendimento em múltiplos canais</li>
-                    <li>Integrar com CRM ou sistema próprio</li>
-                </ul>
-            </div>
-
-            <div style="background: rgba(254, 243, 199, 0.3); padding: var(--space-4); border-radius: var(--radius-lg); margin-top: var(--space-4); border-left: 3px solid var(--warning);">
-                <p style="color: var(--gray-700); font-size: 0.875rem; margin: 0;">
-                    <strong>🔒 Segurança:</strong> A chave será exibida apenas uma vez. A chave dará acesso total aos agentes da organização. Guarde em local seguro!
-                </p>
-            </div>
+        <div class="form-group">
+            <label class="form-label" for="name">Nome da Chave API</label>
+            <input type="text" name="name" id="name" class="form-input" placeholder="Chave de Produção" required>
+            <small class="form-helper" style="display: block; margin-top: 0.5rem; color: var(--gray-500); font-size: 0.875rem;">Escolha um nome descritivo para identificar esta chave</small>
         </div>
         
         <div class="form-group">
-            <label for="organization">Organização *</label>
-            <select name="organization" id="organization" required>
-                <option value="">Selecione uma organização...</option>
+            <label class="form-label" for="organization">Organização</label>
+            <select name="organization" id="organization" class="form-select" required>
+                <option value="">Selecione a organização...</option>
                 {% for org in organizations %}
                 <option value="{{ org.id }}">{{ org.name }}</option>
                 {% endfor %}
             </select>
-            <small class="form-helper">Selecione a organização que terá acesso com esta chave</small>
         </div>
         
-        <div class="form-group">
-            <label for="name">Nome/Descrição</label>
-            <input type="text" name="name" id="name" placeholder="Ex: Integração n8n WhatsApp, API Mobile, etc.">
-            <small class="form-helper">Opcional - ajuda a identificar onde esta chave está sendo usada</small>
-        </div>
-        
-        <div style="display: flex; gap: var(--space-3); justify-content: flex-end; margin-top: var(--space-8); padding-top: var(--space-6); border-top: 2px solid var(--gray-100);">
+        <div style="display: flex; gap: 0.75rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
+            <button type="submit" class="btn btn-primary">
+                Gerar Chave API
+            </button>
             <a href="{% url 'organizations:apikeys' %}" class="btn btn-secondary">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
                 Cancelar
             </a>
-            <button type="submit" class="btn btn-success">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                </svg>
-                Gerar API Key
-            </button>
         </div>
     </form>
-    {% endif %}
 </div>
+{% endif %}
 {% endblock %}

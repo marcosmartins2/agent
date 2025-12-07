@@ -11,4 +11,5 @@ urlpatterns = [
     path("apikeys/<int:pk>/delete/", views.apikey_delete, name="apikey_delete"),
     path("<slug:slug>/", views.organization_detail, name="detail"),
     path("<slug:slug>/edit/", views.organization_edit, name="edit"),
+    path("<slug:slug>/delete/", views.organization_delete, name="delete"),
 ]

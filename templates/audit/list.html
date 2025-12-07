@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Logs de Auditoria - PanDia{% endblock %}
+{% block page_title %}Logs de Auditoria{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h2 class="content-title" style="display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            Logs de Auditoria
+        </h2>
+        <p class="content-subtitle">Histórico de ações e eventos do sistema</p>
+    </div>
+</div>
+
+{% if logs %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: var(--gray-50); border-bottom: 2px solid var(--gray-200);">
+                <tr>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">DATA/HORA</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">USUÁRIO</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">AÇÃO</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">ENTIDADE</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">ORGANIZAÇÃO</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: var(--gray-700); font-size: 0.875rem;">DETALHES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr style="border-bottom: 1px solid var(--gray-100); {% cycle 'background: white;' 'background: var(--gray-50);' %}">
+                    <td style="padding: 1rem; color: var(--gray-600); font-size: 0.875rem; white-space: nowrap;">
+                        {{ log.created_at|date:"d/m/Y H:i" }}
+                    </td>
+                    <td style="padding: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
+                                {{ log.actor.first_name.0|default:log.actor.username.0|upper }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500; color: var(--gray-900); font-size: 0.875rem;">
+                                    {{ log.actor.first_name|default:log.actor.username }}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--gray-500);">
+                                    {{ log.actor.email }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if log.action == "create" %}
+                        <span class="badge" style="background: #d1fae5; color: #047857; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            ✨ Criar
+                        </span>
+                        {% elif log.action == "update" %}
+                        <span class="badge" style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            ✏️ Atualizar
+                        </span>
+                        {% elif log.action == "delete" %}
+                        <span class="badge" style="background: #fee2e2; color: #b91c1c; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            🗑️ Deletar
+                        </span>
+                        {% elif log.action == "api_call" %}
+                        <span class="badge" style="background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            📡 API
+                        </span>
+                        {% else %}
+                        <span class="badge" style="background: var(--gray-200); color: var(--gray-700); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            {{ log.action }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; color: var(--gray-900); font-weight: 500; font-size: 0.875rem;">
+                        {{ log.entity }}
+                        {% if log.entity_id %}
+                        <span style="color: var(--gray-500); font-weight: 400;">
+                            #{{ log.entity_id|truncatechars:8 }}
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem; color: var(--gray-600); font-size: 0.875rem;">
+                        {% if log.organization %}
+                        {{ log.organization.name }}
+                        {% else %}
+                        <span style="color: var(--gray-400);">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">
+                        {% if log.diff %}
+                        <button onclick="toggleDetails('log-{{ log.id }}')" class="btn-icon-orange" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="16" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8"/>
+                            </svg>
+                        </button>
+                        <div id="log-{{ log.id }}" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: var(--gray-900); border-radius: 6px; font-family: monospace; font-size: 0.75rem; color: #22d3ee; max-width: 400px; overflow-x: auto; white-space: pre-wrap;">{{ log.diff|safe }}</div>
+                        {% else %}
+                        <span style="color: var(--gray-400);">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="text-align: center; margin-top: 2rem; color: var(--gray-500); font-size: 0.875rem;">
+        Mostrando os últimos 100 logs
+    </div>
+{% else %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="empty-state-title">Nenhum log ainda</h3>
+        <p class="empty-state-text">Os logs de auditoria aparecerão aqui quando você realizar ações no sistema</p>
+    </div>
+{% endif %}
+
+<script>
+function toggleDetails(id) {
+    const element = document.getElementById(id);
+    if (element.style.display === 'none') {
+        element.style.display = 'block';
+    } else {
+        element.style.display = 'none';
+    }
+}
+</script>
+
+{% endblock %}

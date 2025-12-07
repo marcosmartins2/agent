@@ -1,162 +1,126 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard - PanDia{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Olá, {{ user.username }}!</h1>
-        <p class="hero-subtitle">Gerencie seus agentes de IA com facilidade</p>
-    </div>
-    <a href="{% url 'agents:create' %}" class="btn btn-primary btn-hero">
-        Criar Novo Agente
-    </a>
-</div>
-
+<!-- Stats Grid -->
 <div class="stats-grid">
-    <div class="stat-card stat-card-1">
-        <div class="stat-icon stat-primary">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-            </svg>
-        </div>
-        <div class="stat-info">
-            <h3 class="stat-number">{{ agents.count }}</h3>
-            <p class="stat-label">Agentes Ativos</p>
-            <a href="{% url 'agents:list' %}" class="stat-link">Ver todos →</a>
-        </div>
-    </div>
-
-    <div class="stat-card stat-card-2">
-        <div class="stat-icon stat-success">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-            </svg>
-        </div>
-        <div class="stat-info">
-            <h3 class="stat-number">{{ organizations.count }}</h3>
-            <p class="stat-label">Organizações</p>
-            <a href="{% url 'organizations:list' %}" class="stat-link">Gerenciar →</a>
+    <div class="stat-card">
+        <div class="stat-title">Organizações</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+            <div class="stat-value">{{ organizations.count }}</div>
+            <div class="stat-icon stat-icon-blue">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
         </div>
     </div>
-
-    <div class="stat-card stat-card-3">
-        <div class="stat-icon stat-accent">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-            </svg>
+    
+    <div class="stat-card">
+        <div class="stat-title">Agentes IA</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+            <div class="stat-value">{{ agents.count }}</div>
+            <div class="stat-icon stat-icon-purple">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
         </div>
-        <div class="stat-info">
-            <h3 class="stat-number">{{ logs.count }}</h3>
-            <p class="stat-label">Atividades Recentes</p>
-            <span class="stat-link">Últimas 24h</span>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-title">Chaves API</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+            <div class="stat-value">0</div>
+            <div class="stat-icon stat-icon-green">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                </svg>
+            </div>
         </div>
     </div>
 </div>
 
-{% if agents %}
-<div class="section-card">
-    <div class="section-header">
-        <h2>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
-            Seus Agentes
-        </h2>
-        <a href="{% url 'agents:list' %}" class="btn btn-secondary btn-sm">Ver Todos</a>
-    </div>
-    <div class="agents-grid">
-        {% for agent in agents|slice:":6" %}
-        <div class="agent-card">
-            <div class="agent-card-header">
-                <div class="agent-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                    </svg>
-                </div>
-                <span class="badge">{{ agent.role }}</span>
-            </div>
-            <h3 class="agent-card-title">{{ agent.name }}</h3>
-            <p class="agent-card-desc">{{ agent.description|truncatewords:12 }}</p>
-            <div class="agent-card-footer">
-                <a href="{% url 'agents:detail' agent.slug %}" class="btn btn-sm btn-ghost">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    Detalhes
-                </a>
-                <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-sm btn-primary">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    Testar
-                </a>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% else %}
-<div class="empty-state">
-    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-    </svg>
-    <h3>Nenhum agente criado ainda</h3>
-    <p>Crie seu primeiro agente de IA e comece a automatizar tarefas</p>
-    <a href="{% url 'agents:create' %}" class="btn btn-primary">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="16"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
-        Criar Primeiro Agente
+<!-- Recent Organizations -->
+<div class="content-header">
+    <h2 class="content-title" style="font-size: 1.5rem; margin-bottom: 0;">Organizações Recentes</h2>
+    <a href="{% url 'organizations:create' %}" class="btn btn-primary">
+        + Criar Organização
     </a>
 </div>
+
+{% if organizations %}
+    {% for org in organizations %}
+    <div class="list-item">
+        <div class="list-item-content">
+            <h3 class="list-item-title">{{ org.name }}</h3>
+            <div class="list-item-meta">
+                <span>Criado em {{ org.created_at|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+        <div class="list-item-actions">
+            <a href="{% url 'organizations:detail' org.slug %}" style="color: var(--gray-400); text-decoration: none; font-size: 1.25rem; transition: color 0.2s;" title="View">
+                →
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <h3 class="empty-state-title">Nenhuma organização ainda</h3>
+        <p class="empty-state-text">Crie sua primeira organização para começar</p>
+        <a href="{% url 'organizations:create' %}" class="btn btn-primary">
+            + Criar Organização
+        </a>
+    </div>
 {% endif %}
 
-<div class="quick-actions">
-    <h2 class="section-title-small">Ações Rápidas</h2>
-    <div class="actions-grid">
-        <a href="{% url 'agents:create' %}" class="action-card">
-            <div class="action-icon action-primary">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/>
-                    <line x1="8" y1="12" x2="16" y2="12"/>
-                </svg>
+<!-- Quick Actions -->
+<div style="margin-top: 3rem;">
+    <div class="content-header" style="margin-bottom: 1.5rem;">
+        <h2 class="content-title" style="font-size: 1.5rem; margin-bottom: 0;">Ações Rápidas</h2>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+        <a href="{% url 'agents:list' %}" class="card" style="text-decoration: none; cursor: pointer; transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="stat-icon stat-icon-purple">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="card-title" style="margin-bottom: 0.25rem;">Gerenciar Agentes</h3>
+                    <p class="card-subtitle" style="margin-bottom: 0;">Visualize e configure seus agentes de IA</p>
+                </div>
             </div>
-            <h3>Novo Agente</h3>
-            <p>Configure um agente personalizado</p>
         </a>
-        <a href="{% url 'organizations:list' %}" class="action-card">
-            <div class="action-icon action-success">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                </svg>
+        
+        <a href="{% url 'organizations:list' %}" class="card" style="text-decoration: none; cursor: pointer; transition: all 0.2s;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="stat-icon stat-icon-blue">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="card-title" style="margin-bottom: 0.25rem;">Organizações</h3>
+                    <p class="card-subtitle" style="margin-bottom: 0;">Gerencie suas organizações e equipes</p>
+                </div>
             </div>
-            <h3>Organizações</h3>
-            <p>Gerencie suas equipes</p>
-        </a>
-        <a href="{% url 'organizations:apikeys' %}" class="action-card">
-            <div class="action-icon action-info">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-                </svg>
-            </div>
-            <h3>API Keys</h3>
-            <p>Configure integrações</p>
-        </a>
-        <a href="{% url 'api:docs' %}" class="action-card">
-            <div class="action-icon action-accent">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="16 18 22 12 16 6"></polyline>
-                    <polyline points="8 6 2 12 8 18"></polyline>
-                </svg>
-            </div>
-            <h3>API Docs</h3>
-            <p>Documentação completa da API</p>
         </a>
     </div>
 </div>

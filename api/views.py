@@ -31,7 +31,21 @@ def get_agent_config(request, slug):
     try:
         agent = Agent.objects.get(slug=slug, organization=org, is_active=True)
     except Agent.DoesNotExist:
-        return JsonResponse({"error": "Agent not found"}, status=404)
+        # Log de debug para ajudar a identificar o problema
+        print(f"DEBUG API - Agente não encontrado:")
+        print(f"  - Slug buscado: {slug}")
+        print(f"  - Organização da API Key: {org.name} (ID: {org.id})")
+        print(f"  - Agentes disponíveis nesta org:")
+        for a in Agent.objects.filter(organization=org):
+            print(f"    - {a.slug} (ativo: {a.is_active})")
+        return JsonResponse({
+            "error": "Agent not found",
+            "details": {
+                "slug": slug,
+                "organization": org.name,
+                "hint": "Verifique se o agente pertence à organização desta API Key e está ativo"
+            }
+        }, status=404)
     
     # Log da requisição
     AuditLog.log(
@@ -84,7 +98,17 @@ def get_agent_knowledge(request, slug):
     try:
         agent = Agent.objects.get(slug=slug, organization=org, is_active=True)
     except Agent.DoesNotExist:
-        return JsonResponse({"error": "Agent not found"}, status=404)
+        # Log de debug
+        print(f"DEBUG API Knowledge - Agente não encontrado:")
+        print(f"  - Slug buscado: {slug}")
+        print(f"  - Organização da API Key: {org.name} (ID: {org.id})")
+        return JsonResponse({
+            "error": "Agent not found",
+            "details": {
+                "slug": slug,
+                "organization": org.name
+            }
+        }, status=404)
     
     # Log da requisição
     AuditLog.log(

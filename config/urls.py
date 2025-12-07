@@ -14,6 +14,7 @@ urlpatterns = [
     path("organizations/", include("organizations.urls")),
     path("api/", include("api.urls")),
     path("webhooks/", include("webhooks.urls")),
+    path("audit/", include("audit.urls")),
 ]
 
 # Servir arquivos de media em desenvolvimento

@@ -1,243 +1,207 @@
-﻿{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %}
 
-{% block title %}{{ agent.name }}{% endblock %}
+{% block title %}{{ agent.name }} - PanDia{% endblock %}
+{% block page_title %}Detalhes do Agente{% endblock %}
 
 {% block content %}
-<div class="page-header">
+<a href="{% url 'agents:list' %}" class="back-link">
+    ← Voltar para agentes
+</a>
+
+<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem;">
     <div>
-        <h1>
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
+        <h1 class="content-title" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #f59e0b, #ea8a08); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
             {{ agent.name }}
         </h1>
-        <p style="color: var(--gray-600); font-size: 1.125rem; margin-top: var(--space-2);">
-            {{ agent.get_role_display_custom }} - {{ agent.sector }}
-        </p>
+        <p class="content-subtitle" style="margin-left: 60px;">{{ agent.role }} - {{ agent.sector }}</p>
     </div>
-    <div class="header-actions">
-        <a href="{% url 'agents:edit' agent.slug %}" class="btn btn-primary">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            Editar
-        </a>
-        <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-success">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'agents:playground' agent.slug %}" class="btn" style="background: #3b82f6; color: white;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Testar Agora
+            Testar
         </a>
-        <a href="{% url 'agents:delete' agent.slug %}" class="btn btn-danger">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
+        <a href="{% url 'agents:edit' agent.slug %}" class="btn btn-primary">
+            Editar
+        </a>
+        <a href="{% url 'agents:delete' agent.slug %}" class="btn" style="background: #ef4444; color: white;">
             Excluir
         </a>
     </div>
 </div>
 
-<div class="detail-container">
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    <!-- Basic Information Card -->
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             Informações Básicas
-        </h2>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <label>Nome do Agente</label>
-                <p>{{ agent.name }}</p>
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Função</label>
+                <p style="color: var(--gray-900);">{{ agent.role }}</p>
             </div>
-            <div class="detail-item">
-                <label>Função</label>
-                <p><span class="badge">{{ agent.get_role_display_custom|upper }}</span></p>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Setor</label>
+                <p style="color: var(--gray-900);">{{ agent.sector|default:"N/A" }}</p>
             </div>
-            <div class="detail-item">
-                <label>Setor</label>
-                <p>{{ agent.sector }}</p>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Idioma</label>
+                <p style="color: var(--gray-900);">{{ agent.language }}</p>
             </div>
-            <div class="detail-item">
-                <label>Idioma</label>
-                <p>{{ agent.language }}</p>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Tom</label>
+                <p style="color: var(--gray-900);">{{ agent.tone }}</p>
             </div>
-            <div class="detail-item">
-                <label>Status</label>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Status</label>
                 <p>
-                    {% if agent.status == 'ativo' %}
-                        <span class="badge badge-success">✓ Ativo</span>
-                    {% elif agent.status == 'inativo' %}
-                        <span class="badge badge-danger">✗ Inativo</span>
+                    {% if agent.status == 'Ativo' %}
+                        <span class="badge badge-success">Ativo</span>
+                    {% elif agent.status == 'Inativo' %}
+                        <span class="badge" style="background: var(--gray-400); color: white;">Inativo</span>
                     {% else %}
-                        <span class="badge badge-warning">🔧 Em Manutenção</span>
+                        <span class="badge" style="background: #f59e0b; color: white;">Em Manutenção</span>
                     {% endif %}
                 </p>
             </div>
-            <div class="detail-item">
-                <label>Personalidade/Tom</label>
-                <p><span class="badge badge-success">{{ agent.get_personality_display }}</span></p>
-            </div>
-            <div class="detail-item">
-                <label>Tempo Máx. Resposta</label>
-                <p>{{ agent.max_response_time }}s</p>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Tempo Máx. de Resposta</label>
+                <p style="color: var(--gray-900);">{{ agent.max_response_time|default:"30" }}s</p>
             </div>
         </div>
     </div>
 
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <!-- Messages Card -->
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
             </svg>
-            Mensagens Configuradas
-        </h2>
-        <div class="detail-grid" style="grid-template-columns: 1fr;">
-            <div class="detail-item">
-                <label>💬 Mensagem de Boas-vindas</label>
-                <p style="background: var(--beige-100); padding: var(--space-3); border-radius: var(--radius-lg); border-left: 3px solid var(--primary-500); font-style: italic; color: var(--gray-700);">
-                    {{ agent.greeting|default:"Nenhuma saudação definida." }}
+            Mensagens
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Saudação</label>
+                <p style="background: var(--gray-50); padding: 0.75rem; border-radius: 6px; color: var(--gray-700); font-size: 0.875rem; font-style: italic;">
+                    {{ agent.greeting|default:"Nenhuma saudação definida" }}
                 </p>
             </div>
-            <div class="detail-item">
-                <label>🌙 Mensagem Fora do Horário</label>
-                <p style="background: var(--beige-100); padding: var(--space-3); border-radius: var(--radius-lg); border-left: 3px solid var(--primary-500); color: var(--gray-700);">
-                    {{ agent.out_of_hours_message|default:"Nenhuma mensagem configurada." }}
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Fora do Horário</label>
+                <p style="background: var(--gray-50); padding: 0.75rem; border-radius: 6px; color: var(--gray-700); font-size: 0.875rem;">
+                    {{ agent.out_of_hours_message|default:"Nenhuma mensagem configurada" }}
                 </p>
             </div>
-            <div class="detail-item">
-                <label>🔄 Palavras-chave de Transferência</label>
-                <p style="color: var(--gray-700);">
-                    {{ agent.transfer_keywords|default:"Nenhuma palavra-chave configurada." }}
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Alternativa</label>
+                <p style="background: var(--gray-50); padding: 0.75rem; border-radius: 6px; color: var(--gray-700); font-size: 0.875rem;">
+                    {{ agent.fallback_message|default:"Desculpe, não entendi" }}
                 </p>
             </div>
         </div>
     </div>
 
-    {% if agent.knowledge_pdf %}
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <!-- Advanced Settings Card -->
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Configurações Avançadas
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Palavras-chave de Transferência</label>
+                <p style="color: var(--gray-900); font-size: 0.875rem;">{{ agent.transfer_keywords|default:"Não configurado" }}</p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Regra de Escalonamento</label>
+                <p style="color: var(--gray-900); font-size: 0.875rem;">{{ agent.escalation_rule|default:"Nenhuma regra definida" }}</p>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Diretrizes de Estilo</label>
+                <p style="color: var(--gray-700); font-size: 0.875rem; white-space: pre-wrap;">{{ agent.style_guidelines|default:"Nenhuma diretriz definida" }}</p>
+            </div>
+            {% if agent.n8n_webhook_url %}
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">N8N Webhook</label>
+                <p style="font-family: monospace; font-size: 0.875rem; word-break: break-all; color: var(--gray-700);">{{ agent.n8n_webhook_url }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Knowledge Base Card (Full Width) -->
+{% if agent.knowledge_pdf %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        PDF de Base de Conhecimento
+    </h3>
+    <div style="background: #fef3c7; padding: 1.5rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <svg width="32" height="32" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            Arquivo de Conhecimento (PDF)
-        </h2>
-        <div style="padding: var(--space-4); background: var(--primary-50); border-radius: var(--radius-md); display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <div style="flex: 1;">
-                <p style="margin: 0; color: var(--primary-700); font-weight: 600; font-size: 1.0625rem;">{{ agent.knowledge_pdf.name }}</p>
+            <div>
+                <p style="font-weight: 600; color: #92400e;">{{ agent.knowledge_pdf.name }}</p>
                 {% if agent.knowledge_pdf_category %}
-                <p style="margin: var(--space-1) 0 0 0; color: var(--gray-600); font-size: 0.875rem;">
-                    Categoria: <strong>{{ agent.knowledge_pdf_category }}</strong>
-                </p>
+                <p style="font-size: 0.875rem; color: #92400e; margin-top: 0.25rem;">Categoria: {{ agent.knowledge_pdf_category }}</p>
                 {% endif %}
-                {% if agent.knowledge_updated_at %}
-                <p style="margin: var(--space-1) 0 0 0; color: var(--gray-600); font-size: 0.875rem;">
-                    Atualizado em: {{ agent.knowledge_updated_at|date:'d/m/Y às H:i' }}
-                </p>
+                {% if agent.knowledge_pdf_text %}
+                <p style="font-size: 0.875rem; color: #92400e; margin-top: 0.25rem;">{{ agent.knowledge_pdf_text|length }} caracteres extraídos</p>
                 {% endif %}
             </div>
-            <a href="{% url 'agents:delete_pdf' agent.slug %}" class="btn btn-danger btn-sm">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Deletar
-            </a>
         </div>
-        
-        {% if agent.knowledge_pdf_text %}
-        <div class="detail-item">
-            <label>� Texto Extraído do PDF (Preview)</label>
-            <pre class="code-block" style="max-height: 400px; overflow-y: auto;">{{ agent.knowledge_pdf_text|truncatewords:500 }}</pre>
-            <p style="color: var(--gray-600); font-size: 0.875rem; margin-top: var(--space-2);">
-                Total: {{ agent.knowledge_pdf_text|length }} caracteres extraídos
-            </p>
-        </div>
-        {% endif %}
+        <a href="{% url 'agents:delete_pdf' agent.slug %}" class="btn" style="background: #ef4444; color: white;">
+            Excluir PDF
+        </a>
     </div>
-    {% else %}
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Arquivo de Conhecimento (PDF)
-        </h2>
-        <div style="padding: var(--space-6); background: var(--gray-50); border-radius: var(--radius-md); text-align: center; color: var(--gray-600);">
-            <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin: 0 auto var(--space-3);">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <p>Nenhum PDF carregado ainda.</p>
-            <a href="{% url 'agents:edit' agent.slug %}" class="btn btn-primary" style="margin-top: var(--space-3);">Fazer Upload de PDF</a>
-        </div>
+    {% if agent.knowledge_pdf_text %}
+    <div style="margin-top: 1rem;">
+        <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.5rem;">Prévia do Texto Extraído</label>
+        <pre style="background: var(--gray-50); padding: 1rem; border-radius: 8px; max-height: 400px; overflow-y: auto; font-size: 0.875rem; white-space: pre-wrap; color: var(--gray-700);">{{ agent.knowledge_pdf_text|truncatewords:500 }}</pre>
     </div>
     {% endif %}
-
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Comportamento Avançado (Legacy)
-        </h2>
-        <div class="detail-grid" style="grid-template-columns: 1fr;">
-            <div class="detail-item">
-                <label>📋 Diretrizes de Estilo</label>
-                <p style="white-space: pre-wrap; line-height: 1.7; color: var(--gray-700);">{{ agent.style_guidelines|default:"Nenhuma diretriz definida." }}</p>
-            </div>
-            <div class="detail-item">
-                <label>❌ Mensagem de Fallback</label>
-                <p style="background: var(--beige-100); padding: var(--space-3); border-radius: var(--radius-lg); color: var(--gray-700);">{{ agent.fallback_message|default:"Desculpe, não entendi." }}</p>
-            </div>
-            <div class="detail-item">
-                <label>📞 Regra de Escalonamento</label>
-                <p style="color: var(--gray-700);">{{ agent.escalation_rule|default:"Nenhuma regra definida." }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="detail-section" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;">
-        <h2>
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Metadata
-        </h2>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <label>Criado em</label>
-                <p>{{ agent.created_at|date:'d/m/Y às H:i' }}</p>
-            </div>
-            <div class="detail-item">
-                <label>Última atualização</label>
-                <p>{{ agent.updated_at|date:'d/m/Y às H:i' }}</p>
-            </div>
-            <div class="detail-item">
-                <label>Organização</label>
-                <p>{{ agent.organization.name }}</p>
-            </div>
-        </div>
-    </div>
 </div>
+{% endif %}
 
-<div style="margin-top: var(--space-8); display: flex; gap: var(--space-3);">
-    <a href="{% url 'agents:list' %}" class="btn btn-secondary">
+<!-- Metadata Card -->
+<div class="card" style="margin-top: 1.5rem;">
+    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Voltar para Lista
-    </a>
-    <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-hero btn-success">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Testar no Playground
-    </a>
+        Metadados
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Organization</label>
+            <p style="color: var(--gray-900);">{{ agent.organization.name }}</p>
+        </div>
+        <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Created</label>
+            <p style="color: var(--gray-900);">{{ agent.created_at|date:'M d, Y' }}</p>
+        </div>
+        <div>
+            <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--gray-500); margin-bottom: 0.25rem;">Last Updated</label>
+            <p style="color: var(--gray-900);">{{ agent.updated_at|date:'M d, Y' }}</p>
+        </div>
+    </div>
 </div>
 {% endblock %}
-

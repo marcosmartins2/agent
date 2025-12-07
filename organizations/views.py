@@ -72,6 +72,30 @@ def organization_edit(request, slug):
 
 
 @login_required
+def organization_delete(request, slug):
+    """Deletar organização."""
+    organization = get_object_or_404(Organization, slug=slug, owner=request.user)
+    
+    if request.method == "POST":
+        org_name = organization.name
+        
+        AuditLog.log(
+            action="delete",
+            entity="Organization",
+            organization=organization,
+            actor=request.user,
+            entity_id=organization.id,
+            diff={"name": org_name, "slug": slug}
+        )
+        
+        organization.delete()
+        messages.success(request, f"Organização '{org_name}' deletada com sucesso!")
+        return redirect("organizations:list")
+    
+    return render(request, "organizations/confirm_delete.html", {"organization": organization})
+
+
+@login_required
 def apikey_list(request):
     """Lista de API keys do usuário."""
     api_keys = ApiKey.objects.filter(organization__owner=request.user)
