@@ -4,15 +4,15 @@ from .models import Agent
 
 @admin.register(Agent)
 class AgentAdmin(admin.ModelAdmin):
-    list_display = ("name", "organization", "role", "status", "personality", "created_at")
-    search_fields = ("name", "slug", "organization__name", "role", "sector")
+    list_display = ("name", "padaria", "role", "status", "personality", "created_at")
+    search_fields = ("name", "slug", "padaria__name", "role", "sector")
     list_filter = ("status", "personality", "role", "sector", "created_at")
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ("knowledge_updated_at", "created_at", "updated_at")
     
     fieldsets = (
         ("Informações Básicas", {
-            "fields": ("organization", "name", "slug", "role", "sector", "language", "status")
+            "fields": ("padaria", "name", "slug", "role", "sector", "language", "status")
         }),
         ("Personalidade e Mensagens", {
             "fields": ("personality", "greeting", "out_of_hours_message", "max_response_time")

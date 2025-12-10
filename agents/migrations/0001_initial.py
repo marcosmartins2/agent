@@ -32,13 +32,13 @@ class Migration(migrations.Migration):
                 ('escalation_rule', models.TextField(default='Transferir para atendente humano quando:\n- Cliente solicitar explicitamente\n- Reclamação ou problema não resolvido\n- Situação complexa que exija decisão humana\n- Cliente demonstrar insatisfação após 2 tentativas', help_text='Quando e como transferir para atendente humano', verbose_name='Regra de Escalonamento')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Criado em')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Atualizado em')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='agents', to='organizations.organization', verbose_name='Organização')),
+                ('padaria', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='agents', to='organizations.padaria', verbose_name='Padaria')),
             ],
             options={
                 'verbose_name': 'Agente',
                 'verbose_name_plural': 'Agentes',
                 'ordering': ['-created_at'],
-                'unique_together': {('organization', 'slug')},
+                'unique_together': {('padaria', 'slug')},
             },
         ),
     ]

@@ -1,17 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
-from organizations.models import Organization
+from organizations.models import Padaria
 
 
 class AuditLog(models.Model):
     """
     Log de auditoria para rastrear ações no sistema.
     """
-    organization = models.ForeignKey(
-        Organization,
+    padaria = models.ForeignKey(
+        Padaria,
         on_delete=models.CASCADE,
         related_name="audit_logs",
-        verbose_name="Organização",
+        verbose_name="Padaria",
         null=True,
         blank=True
     )
@@ -62,7 +62,7 @@ class AuditLog(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["-created_at"]),
-            models.Index(fields=["organization", "-created_at"]),
+            models.Index(fields=["padaria", "-created_at"]),
             models.Index(fields=["action", "-created_at"]),
         ]
 
@@ -71,10 +71,10 @@ class AuditLog(models.Model):
         return f"{actor_name} - {self.action} - {self.entity} ({self.created_at})"
 
     @classmethod
-    def log(cls, action, entity, organization=None, actor=None, entity_id=None, diff=None, ip=None, user_agent=None):
+    def log(cls, action, entity, padaria=None, actor=None, entity_id=None, diff=None, ip=None, user_agent=None):
         """Helper para criar log de forma simplificada."""
         return cls.objects.create(
-            organization=organization,
+            padaria=padaria,
             actor=actor,
             action=action,
             entity=entity,

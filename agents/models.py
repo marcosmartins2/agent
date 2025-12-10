@@ -1,7 +1,8 @@
 
 from django.db import models
 from django.utils.text import slugify
-from organizations.models import Organization
+from django.core.exceptions import ValidationError
+from organizations.models import Padaria
 
 
 # Choices para Função
@@ -39,92 +40,70 @@ STATUS_CHOICES = [
     ('manutencao', 'Em Manutenção'),
 ]
 
-# Defaults para manicure/pedicure
-DEFAULT_GREETING = """Olá! Eu sou {{agente_nome}}, como posso te ajudar hoje?"""
+# Defaults para padaria
+DEFAULT_GREETING = """Olá! Eu sou {{agente_nome}}, assistente virtual da {{padaria_nome}}. Como posso te ajudar hoje?"""
 
-DEFAULT_OUT_OF_HOURS_MESSAGE = """Olá! No momento estamos fora do horário de atendimento. Nosso horário de funcionamento é de Segunda a Sexta das 9h às 18h e Sábado das 9h às 14h. Deixe sua mensagem que retornaremos assim que possível!"""
+DEFAULT_OUT_OF_HOURS_MESSAGE = """Olá! No momento estamos fora do horário de atendimento. Nosso horário de funcionamento é de Segunda a Sexta das 6h às 20h e Sábado das 6h às 14h. Deixe sua mensagem que retornaremos assim que possível!"""
 
 DEFAULT_TONE = "amigavel"
 
 DEFAULT_STYLE_GUIDELINES = """Use linguagem simples e amigável. Seja objetivo mas cordial. 
-Sempre confirme detalhes importantes como data, horário e serviço. 
+Sempre confirme detalhes importantes como pedido e horário de retirada. 
 Se não souber algo, seja honesto e ofereça alternativas."""
 
 DEFAULT_BUSINESS_HOURS = {
-    "mon": "09:00-18:00",
-    "tue": "09:00-18:00",
-    "wed": "09:00-18:00",
-    "thu": "09:00-18:00",
-    "fri": "09:00-18:00",
-    "sat": "09:00-14:00",
+    "mon": "06:00-20:00",
+    "tue": "06:00-20:00",
+    "wed": "06:00-20:00",
+    "thu": "06:00-20:00",
+    "fri": "06:00-20:00",
+    "sat": "06:00-14:00",
     "sun": "closed"
 }
 
-DEFAULT_KNOWLEDGE_BASE = """## Serviços Oferecidos
+DEFAULT_KNOWLEDGE_BASE = """## Produtos da Padaria
 
-- **Manicure básica** (30min) - R$ 25,00
-- **Pedicure básica** (45min) - R$ 35,00
-- **Manicure + Pedicure** (1h15min) - R$ 55,00
-- **Spa de mãos** (45min) - R$ 40,00
-- **Spa de pés** (1h) - R$ 50,00
-- **Alongamento de unhas** (1h30min) - R$ 80,00
-- **Nail art personalizada** (30min adicional) - R$ 20,00
+### Pães
+- **Pão Francês** - R$ 0,50 (unidade)
+- **Pão de Forma** - R$ 8,00 (pacote)
+- **Pão Integral** - R$ 12,00 (pacote)
+- **Pão de Queijo** - R$ 3,00 (unidade)
+- **Croissant** - R$ 5,00 (unidade)
 
-## Políticas do Salão
+### Doces
+- **Bolo de Chocolate** - R$ 35,00 (inteiro) / R$ 6,00 (fatia)
+- **Bolo de Cenoura** - R$ 30,00 (inteiro) / R$ 5,00 (fatia)
+- **Sonho** - R$ 4,00 (unidade)
+- **Brigadeiro** - R$ 2,50 (unidade)
 
-### Agendamento
-- Agendamentos podem ser feitos por telefone, WhatsApp ou pessoalmente
-- Recomendamos agendar com pelo menos 24h de antecedência
-- Horários disponíveis: Segunda a Sexta 09:00-18:00, Sábado 09:00-14:00
+### Salgados
+- **Coxinha** - R$ 5,00
+- **Esfiha** - R$ 4,00
+- **Empada** - R$ 5,00
+- **Pastel** - R$ 6,00
 
-### Atrasos e Remarcações
-- Tolerância de atraso: 10 minutos
-- Remarcação gratuita: até 24h de antecedência
-- Cancelamento com menos de 24h: taxa de 50% do valor do serviço
-- Falta sem aviso: taxa de 100%
+### Bebidas
+- **Café Expresso** - R$ 4,00
+- **Cappuccino** - R$ 7,00
+- **Suco Natural** - R$ 8,00
+- **Refrigerante** - R$ 5,00
+
+## Políticas
+
+### Encomendas
+- Encomendas devem ser feitas com 24h de antecedência
+- Para bolos decorados, mínimo 48h de antecedência
+- Pagamento de 50% no ato da encomenda
+
+### Entregas
+- Entrega disponível para pedidos acima de R$ 50,00
+- Taxa de entrega: R$ 5,00 (até 5km)
+- Horário de entrega: 8h às 18h
 
 ### Formas de Pagamento
 - Dinheiro
 - Cartão de débito e crédito
 - PIX
-- Não trabalhamos com cheque
-
-## Cuidados Pós-Atendimento
-
-### Após Esmaltação
-- Evite água quente por 2h após a aplicação
-- Não mergulhe as mãos em água nas primeiras 4h
-- Use luvas ao fazer limpeza pesada ou lavar louça
-- Evite piscina e mar nas primeiras 24h
-
-### Cuidados Diários
-- Hidrate cutículas diariamente com óleo específico
-- Use base fortalecedora se as unhas forem frágeis
-- Lixe sempre na mesma direção
-- Não use as unhas como ferramenta
-
-### Alongamento de Unhas
-- Retoque recomendado a cada 15-20 dias
-- Nunca arranque ou force a remoção
-- Mantenha as unhas hidratadas
-- Evite impactos fortes
-
-## Perguntas Frequentes
-
-**Precisa agendar para todos os serviços?**
-Sim, trabalhamos apenas com agendamento para garantir melhor atendimento.
-
-**Pode levar esmalte próprio?**
-Sim, mas verificamos a qualidade antes da aplicação.
-
-**Fazem atendimento a domicílio?**
-Não, apenas no salão.
-
-**Atendem homens?**
-Sim, oferecemos serviços de manicure e pedicure masculina.
-
-**Tem estacionamento?**
-Temos convênio com estacionamento ao lado (2h grátis).
 """
 
 DEFAULT_FALLBACK_MESSAGE = """Desculpe, não entendi bem sua solicitação. Pode reformular? 
@@ -139,13 +118,14 @@ DEFAULT_ESCALATION_RULE = """Transferir para atendente humano quando:
 
 class Agent(models.Model):
     """
-    Agente de IA configurável por organização.
+    Agente de IA configurável por padaria.
+    Limite: 1 agente por padaria.
     """
-    organization = models.ForeignKey(
-        Organization,
+    padaria = models.ForeignKey(
+        Padaria,
         on_delete=models.CASCADE,
         related_name="agents",
-        verbose_name="Organização"
+        verbose_name="Padaria"
     )
     name = models.CharField(max_length=100, verbose_name="Nome do Agente")
     slug = models.SlugField(max_length=120, unique=True, verbose_name="Slug")
@@ -160,9 +140,9 @@ class Agent(models.Model):
     )
     sector = models.CharField(
         max_length=100,
-        default="manicure/pedicure",
+        default="padaria",
         verbose_name="Setor",
-        help_text="Ex: manicure/pedicure, beleza, estética"
+        help_text="Ex: padaria, confeitaria, café"
     )
     language = models.CharField(
         max_length=10,
@@ -194,7 +174,7 @@ class Agent(models.Model):
     greeting = models.TextField(
         default=DEFAULT_GREETING,
         verbose_name="Mensagem de Boas-vindas",
-        help_text="Primeira mensagem enviada ao usuário. Use {{agente_nome}} para personalização"
+        help_text="Primeira mensagem enviada ao usuário. Use {{agente_nome}} e {{padaria_nome}} para personalização"
     )
     out_of_hours_message = models.TextField(
         default=DEFAULT_OUT_OF_HOURS_MESSAGE,
@@ -242,7 +222,7 @@ class Agent(models.Model):
     knowledge_base = models.TextField(
         default=DEFAULT_KNOWLEDGE_BASE,
         verbose_name="Base de Conhecimento",
-        help_text="Informações sobre serviços, políticas, etc (Markdown)"
+        help_text="Informações sobre produtos, serviços, políticas, etc (Markdown)"
     )
     knowledge_pdf = models.FileField(
         upload_to="knowledge_pdfs/",
@@ -300,17 +280,29 @@ class Agent(models.Model):
         verbose_name = "Agente"
         verbose_name_plural = "Agentes"
         ordering = ["-created_at"]
-        unique_together = [("organization", "slug")]
+        unique_together = [("padaria", "slug")]
 
     def __str__(self):
-        return f"{self.name} ({self.organization.name})"
+        return f"{self.name} ({self.padaria.name})"
+
+    def clean(self):
+        """Validação para garantir limite de 1 agente por padaria."""
+        if self.padaria_id:
+            existing = Agent.objects.filter(padaria=self.padaria).exclude(pk=self.pk)
+            if existing.exists():
+                raise ValidationError(
+                    "Esta padaria já possui um agente. Cada padaria pode ter apenas 1 agente."
+                )
 
     def save(self, *args, **kwargs):
         from django.utils import timezone
         
+        # Validar limite de 1 agente por padaria
+        self.clean()
+        
         if not self.slug:
             base_slug = slugify(self.name)
-            slug = f"{base_slug}-{self.organization.slug}"
+            slug = f"{base_slug}-{self.padaria.slug}"
             self.slug = slug
         
         # Garantir business_hours default
@@ -341,6 +333,7 @@ class Agent(models.Model):
         greeting = self.greeting
         greeting = greeting.replace("{{cliente_nome}}", cliente_nome)
         greeting = greeting.replace("{{agente_nome}}", agente_nome)
+        greeting = greeting.replace("{{padaria_nome}}", self.padaria.name)
         return greeting
     
     def get_role_display_custom(self):
@@ -350,3 +343,7 @@ class Agent(models.Model):
     def get_tone_display_custom(self):
         """Retorna o nome legível do tom de voz."""
         return dict(TONE_CHOICES).get(self.tone, self.tone)
+
+
+# Alias para compatibilidade
+Organization = Padaria

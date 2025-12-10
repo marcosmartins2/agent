@@ -1,0 +1,41 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}Padarias - Admin{% endblock %}
+{% block page_title %}Padarias{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h2 class="content-title">Padarias</h2>
+        <p class="content-subtitle">{{ padarias.paginator.count }} padaria(s) cadastrada(s)</p>
+    </div>
+    <a href="{% url 'admin_panel:padaria_create' %}" class="btn btn-primary">+ Nova Padaria</a>
+</div>
+
+<div class="card">
+    {% if padarias %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Dono</th>
+                <th>Status</th>
+                <th>Acoes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for padaria in padarias %}
+            <tr>
+                <td><a href="{% url 'admin_panel:padaria_detail' padaria.slug %}" class="admin-link">{{ padaria.name }}</a></td>
+                <td>{{ padaria.owner.username }}</td>
+                <td>{% if padaria.is_active %}<span class="badge badge-success">Ativa</span>{% else %}<span class="badge badge-inactive">Inativa</span>{% endif %}</td>
+                <td><a href="{% url 'admin_panel:padaria_edit' padaria.slug %}" class="admin-link">Editar</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhuma padaria encontrada.</p>
+    {% endif %}
+</div>
+{% endblock %}

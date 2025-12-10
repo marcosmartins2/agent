@@ -5,7 +5,7 @@ Formulário simplificado para criação/edição de agentes.
 from django import forms
 from .models import Agent
 from .presets import get_preset_choices, get_preset_defaults
-from organizations.models import Organization
+from organizations.models import Padaria, PadariaUser
 
 
 class AgentSimpleForm(forms.ModelForm):
@@ -59,7 +59,7 @@ class AgentSimpleForm(forms.ModelForm):
     class Meta:
         model = Agent
         fields = [
-            'organization',
+            'padaria',
             'name',
             'language',
             'greeting',
@@ -80,7 +80,7 @@ class AgentSimpleForm(forms.ModelForm):
         ]
         
         widgets = {
-            'organization': forms.Select(attrs={'class': 'form-select'}),
+            'padaria': forms.Select(attrs={'class': 'form-select'}),
             'name': forms.TextInput(attrs={
                 'class': 'form-input',
                 'placeholder': 'Ex: Atendente Virtual Maria',
@@ -130,6 +130,7 @@ class AgentSimpleForm(forms.ModelForm):
         }
         
         labels = {
+            'padaria': 'Padaria',
             'name': 'Nome do Agente',
             'language': 'Idioma',
             'greeting': 'Mensagem de Saudação',
@@ -151,7 +152,7 @@ class AgentSimpleForm(forms.ModelForm):
         
         help_texts = {
             'name': 'Nome amigável que aparecerá nas conversas',
-            'greeting': 'Use {{cliente_nome}} e {{agente_nome}} como placeholders',
+            'greeting': 'Use {{cliente_nome}}, {{agente_nome}} e {{padaria_nome}} como placeholders',
             'knowledge_pdf': 'Envie seu catálogo/FAQ. O texto será extraído automaticamente.',
             'knowledge_base': 'Informações complementares que não estão no PDF',
             'transfer_keywords': 'Palavras que acionam transferência para humano',
@@ -161,9 +162,26 @@ class AgentSimpleForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         
-        # Filtrar organizações do usuário
+        # Make message fields optional
+        self.fields['greeting'].required = False
+        self.fields['out_of_hours_message'].required = False
+        self.fields['fallback_message'].required = False
+        self.fields['knowledge_base'].required = False
+        self.fields['knowledge_pdf_category'].required = False
+        self.fields['transfer_keywords'].required = False
+        
+        # Filtrar padarias do usuário (onde é dono ou funcionário)
         if self.user:
-            self.fields['organization'].queryset = Organization.objects.filter(owner=self.user)
+            if self.user.is_superuser:
+                # Admin master pode ver todas
+                self.fields['padaria'].queryset = Padaria.objects.all()
+            else:
+                # Usuário normal: apenas padarias onde é dono
+                user_padarias = PadariaUser.objects.filter(
+                    user=self.user, 
+                    role='dono'
+                ).values_list('padaria_id', flat=True)
+                self.fields['padaria'].queryset = Padaria.objects.filter(id__in=user_padarias)
         
         # Se editando, preencher status_toggle
         if self.instance and self.instance.pk:

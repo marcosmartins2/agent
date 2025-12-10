@@ -27,13 +27,13 @@ class Migration(migrations.Migration):
                 ('user_agent', models.TextField(blank=True, verbose_name='User Agent')),
                 ('created_at', models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Criado em')),
                 ('actor', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='audit_logs', to=settings.AUTH_USER_MODEL, verbose_name='Usuário')),
-                ('organization', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='audit_logs', to='organizations.organization', verbose_name='Organização')),
+                ('padaria', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='audit_logs', to='organizations.padaria', verbose_name='Padaria')),
             ],
             options={
                 'verbose_name': 'Log de Auditoria',
                 'verbose_name_plural': 'Logs de Auditoria',
                 'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['-created_at'], name='audit_audit_created_6e540c_idx'), models.Index(fields=['organization', '-created_at'], name='audit_audit_organiz_c1c99d_idx'), models.Index(fields=['action', '-created_at'], name='audit_audit_action_0c6a84_idx')],
+                'indexes': [models.Index(fields=['-created_at'], name='audit_audit_created_6e540c_idx'), models.Index(fields=['padaria', '-created_at'], name='audit_audit_organiz_c1c99d_idx'), models.Index(fields=['action', '-created_at'], name='audit_audit_action_0c6a84_idx')],
             },
         ),
     ]

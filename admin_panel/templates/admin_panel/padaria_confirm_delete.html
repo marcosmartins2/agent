@@ -1,0 +1,41 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}Deletar {{ padaria.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a> /
+    <a href="{% url 'admin_panel:padarias_list' %}">Padarias</a> /
+    <a href="{% url 'admin_panel:padaria_detail' padaria.slug %}">{{ padaria.name }}</a> /
+    Deletar
+</div>
+
+<div class="admin-card" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">âš ï¸</div>
+    <h2 style="color: white; margin-bottom: 1rem;">Deletar Padaria?</h2>
+    <p style="color: rgba(255,255,255,0.7); margin-bottom: 2rem;">
+        VocÃª estÃ¡ prestes a deletar <strong>{{ padaria.name }}</strong>.<br>
+        Esta aÃ§Ã£o Ã© irreversÃ­vel e irÃ¡ remover:
+    </p>
+
+    <ul style="text-align: left; color: rgba(255,255,255,0.7); margin-bottom: 2rem; padding-left: 2rem;">
+        <li>Todos os agentes da padaria</li>
+        <li>Todos os membros associados</li>
+        <li>Todas as API Keys</li>
+        <li>Todos os logs de auditoria</li>
+    </ul>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button type="submit" class="btn-admin" style="background: #e53e3e;">
+                ðŸ—‘ï¸ Sim, Deletar
+            </button>
+            <a href="{% url 'admin_panel:padaria_detail' padaria.slug %}" class="btn-admin btn-admin-secondary">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

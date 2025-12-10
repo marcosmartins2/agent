@@ -1,0 +1,86 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}API Keys - {{ padaria.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a> /
+    <a href="{% url 'admin_panel:padarias_list' %}">Padarias</a> /
+    <a href="{% url 'admin_panel:padaria_detail' padaria.slug %}">{{ padaria.name }}</a> /
+    API Keys
+</div>
+
+<div class="admin-title">
+    <div>
+        API Keys
+        <div class="subtitle">{{ padaria.name }}</div>
+    </div>
+    <form method="post" action="{% url 'admin_panel:padaria_apikey_generate' padaria.slug %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="name" value="Nova Chave">
+        <button type="submit" class="btn-admin">ðŸ”‘ Gerar Nova Key</button>
+    </form>
+</div>
+
+<div class="admin-card">
+    {% if api_keys %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Chave</th>
+                <th>Status</th>
+                <th>Criada em</th>
+                <th>Ãšltimo uso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key in api_keys %}
+            <tr>
+                <td>{{ key.name|default:"Sem nome" }}</td>
+                <td>
+                    <code
+                        style="color: var(--admin-highlight); background: rgba(255,255,255,0.05); padding: 0.25rem 0.5rem; border-radius: 0.25rem;">
+                        {{ key.key }}
+                    </code>
+                </td>
+                <td>
+                    {% if key.is_active %}
+                    <span class="badge badge-success">Ativa</span>
+                    {% else %}
+                    <span class="badge badge-danger">Inativa</span>
+                    {% endif %}
+                </td>
+                <td>{{ key.created_at|date:"d/m/Y H:i" }}</td>
+                <td>{{ key.last_used_at|date:"d/m/Y H:i"|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">ðŸ”‘</div>
+        <p>Nenhuma API Key cadastrada.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="admin-card" style="background: rgba(99, 179, 237, 0.1); border-color: rgba(99, 179, 237, 0.3);">
+    <h3 style="color: #63b3ed;">ðŸ’¡ Como usar a API Key</h3>
+    <p style="color: rgba(255,255,255,0.8); margin-bottom: 1rem;">
+        Use a API Key para autenticar chamadas do n8n ou outras integraÃ§Ãµes:
+    </p>
+    <pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; color: #68d391;">
+# Via query parameter
+GET /api/n8n/agents/SLUG/config?api_key=SUA_API_KEY
+
+# Via header
+GET /api/n8n/agents/SLUG/config
+X-API-Key: SUA_API_KEY</pre>
+</div>
+
+<div style="margin-top: 1rem;">
+    <a href="{% url 'admin_panel:padaria_detail' padaria.slug %}" class="admin-link">â† Voltar para detalhes</a>
+</div>
+{% endblock %}
+

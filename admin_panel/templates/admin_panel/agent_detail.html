@@ -1,0 +1,99 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ agent.name }} - Admin{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a> /
+    <a href="{% url 'admin_panel:agents_list' %}">Agentes</a> /
+    {{ agent.name }}
+</div>
+
+<div class="content-header">
+    <div>
+        <h2 class="content-title">{{ agent.name }}</h2>
+        <p class="content-subtitle">
+            {% if agent.status == 'ativo' %}<span class="badge badge-success">Ativo</span>{% elif agent.status == 'inativo' %}<span class="badge badge-danger">Inativo</span>{% else %}<span class="badge badge-warning">Manutencao</span>{% endif %}
+            - {{ agent.padaria.name }}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'agents:edit' agent.slug %}" class="btn btn-primary">Editar Agente</a>
+        <a href="{% url 'agents:playground' agent.slug %}" class="btn btn-secondary">Testar Agente</a>
+        <a href="{% url 'admin_panel:padaria_detail' agent.padaria.slug %}" class="btn btn-secondary">Ver Padaria</a>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3 class="card-title">Informacoes Gerais</h3>
+        <table class="admin-table">
+            <tr><td><strong>Nome</strong></td><td>{{ agent.name }}</td></tr>
+            <tr><td><strong>Slug</strong></td><td><code>{{ agent.slug }}</code></td></tr>
+            <tr><td><strong>Padaria</strong></td><td><a href="{% url 'admin_panel:padaria_detail' agent.padaria.slug %}" class="admin-link">{{ agent.padaria.name }}</a></td></tr>
+            <tr><td><strong>Funcao</strong></td><td>{{ agent.role }}</td></tr>
+            <tr><td><strong>Setor</strong></td><td>{{ agent.sector }}</td></tr>
+            <tr><td><strong>Idioma</strong></td><td>{{ agent.language }}</td></tr>
+            <tr><td><strong>Criado em</strong></td><td>{{ agent.created_at|date:"d/m/Y H:i" }}</td></tr>
+            <tr><td><strong>Atualizado em</strong></td><td>{{ agent.updated_at|date:"d/m/Y H:i" }}</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Personalidade</h3>
+        <table class="admin-table">
+            <tr><td><strong>Personalidade</strong></td><td>{{ agent.get_personality_display }}</td></tr>
+            <tr><td><strong>Tom de Voz</strong></td><td>{{ agent.get_tone_display }}</td></tr>
+            <tr><td><strong>Tempo Resposta</strong></td><td>{{ agent.max_response_time }}s</td></tr>
+        </table>
+        <h4 style="margin: 1.5rem 0 0.5rem;">Diretrizes de Estilo</h4>
+        <p style="color: var(--gray-500); font-size: 0.875rem; white-space: pre-line;">{{ agent.style_guidelines }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Mensagens</h3>
+    
+    <h4 style="margin: 1rem 0 0.5rem;">Saudacao</h4>
+    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--gray-200);">
+        {{ agent.greeting|linebreaksbr }}
+    </div>
+
+    <h4 style="margin: 1.5rem 0 0.5rem;">Fora do Horario</h4>
+    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--gray-200);">
+        {{ agent.out_of_hours_message|linebreaksbr }}
+    </div>
+
+    <h4 style="margin: 1.5rem 0 0.5rem;">Fallback</h4>
+    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--gray-200);">
+        {{ agent.fallback_message|linebreaksbr }}
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Base de Conhecimento</h3>
+    {% if agent.knowledge_pdf %}
+    <div style="margin-bottom: 1rem;">
+        <span class="badge badge-success">PDF Carregado</span>
+        <span style="color: var(--gray-500); margin-left: 0.5rem;">{{ agent.knowledge_pdf.name|truncatechars:50 }}</span>
+    </div>
+    {% endif %}
+    <div style="background: var(--gray-50); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--gray-200); max-height: 400px; overflow-y: auto;">
+        <pre style="white-space: pre-wrap; font-family: inherit;">{{ agent.knowledge_base }}</pre>
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Horario de Funcionamento</h3>
+    <table class="admin-table">
+        {% for day, hours in agent.business_hours.items %}
+        <tr>
+            <td><strong>{% if day == 'mon' %}Segunda{% elif day == 'tue' %}Terca{% elif day == 'wed' %}Quarta{% elif day == 'thu' %}Quinta{% elif day == 'fri' %}Sexta{% elif day == 'sat' %}Sabado{% elif day == 'sun' %}Domingo{% endif %}</strong></td>
+            <td>{% if hours == 'closed' %}<span class="badge badge-danger">Fechado</span>{% else %}{{ hours }}{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="2">Horarios nao configurados</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

@@ -1,144 +1,163 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}{% if is_create %}Criar{% else %}Editar{% endif %} Agente - PanDia{% endblock %}
 {% block page_title %}{% if is_create %}Criar Novo Agente{% else %}Editar Agente{% endif %}{% endblock %}
 
 {% block content %}
 <style>
-.preset-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.preset-card {
-    border: 2px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.preset-card:hover {
-    border-color: var(--orange-500);
-    background: rgba(245, 158, 11, 0.05);
-}
-.preset-card.selected {
-    border-color: var(--orange-500);
-    background: rgba(245, 158, 11, 0.1);
-}
-.preset-card h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--gray-900);
-}
-.preset-card p {
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--gray-600);
-}
-.status-toggle-container {
-    display: flex;
-    gap: 1rem;
-    padding: 0.5rem 0;
-}
-.status-option {
-    flex: 1;
-    position: relative;
-}
-.status-option input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-}
-.status-option label {
-    display: block;
-    padding: 1rem;
-    border: 2px solid var(--gray-300);
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 600;
-}
-.status-option input:checked + label {
-    border-color: var(--green-500);
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--green-700);
-}
-.status-option.inactive input:checked + label {
-    border-color: var(--gray-500);
-    background: var(--gray-100);
-    color: var(--gray-700);
-}
-.pdf-preview {
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-.pdf-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-.pdf-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-}
-.transfer-fields {
-    background: var(--gray-50);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-.transfer-fields.hidden {
-    display: none;
-}
-.section-divider {
-    border-top: 1px solid var(--gray-200);
-    margin: 2rem 0;
-}
+    .preset-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .preset-card {
+        border: 2px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .preset-card:hover {
+        border-color: var(--orange-500);
+        background: rgba(245, 158, 11, 0.05);
+    }
+
+    .preset-card.selected {
+        border-color: var(--orange-500);
+        background: rgba(245, 158, 11, 0.1);
+    }
+
+    .preset-card h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    .preset-card p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .status-toggle-container {
+        display: flex;
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+
+    .status-option {
+        flex: 1;
+        position: relative;
+    }
+
+    .status-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .status-option label {
+        display: block;
+        padding: 1rem;
+        border: 2px solid var(--gray-300);
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 600;
+    }
+
+    .status-option input:checked+label {
+        border-color: var(--green-500);
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--green-700);
+    }
+
+    .status-option.inactive input:checked+label {
+        border-color: var(--gray-500);
+        background: var(--gray-100);
+        color: var(--gray-700);
+    }
+
+    .pdf-preview {
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .pdf-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .pdf-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+
+    .transfer-fields {
+        background: var(--gray-50);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+
+    .transfer-fields.hidden {
+        display: none;
+    }
+
+    .section-divider {
+        border-top: 1px solid var(--gray-200);
+        margin: 2rem 0;
+    }
 </style>
 
 <a href="{% url 'agents:list' %}" class="back-link">
-    ← Voltar para agentes
+    â† Voltar para agentes
 </a>
 
 <div class="card" style="max-width: 900px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 2rem;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; gap: 2rem;">
         <div style="flex: 1;">
             <h2 class="content-title" style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
                     {% if is_create %}
-                    <path d="M12 5v14M5 12h14"/>
+                    <path d="M12 5v14M5 12h14" />
                     {% else %}
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     {% endif %}
                 </svg>
                 {% if is_create %}Criar Novo Agente{% else %}Editar Agente{% endif %}
             </h2>
-            <p class="content-subtitle">Configure seu agente em minutos. É simples e rápido!</p>
+            <p class="content-subtitle">Configure seu agente em minutos. Ã‰ simples e rÃ¡pido!</p>
         </div>
-        
+
         {% if not is_create %}
         <div style="min-width: 420px;">
             <label class="form-label" style="margin-bottom: 0.75rem; display: block;">Status do Agente</label>
             <div class="status-toggle-container">
                 {% for value, label in form.status_toggle.field.choices %}
                 <div class="status-option {% if value == 'inativo' %}inactive{% endif %}">
-                    <input type="radio" name="status_toggle_display" id="status_{{ value }}_top" value="{{ value }}" 
-                           onchange="document.getElementById('status_toggle_hidden').value = this.value"
-                           {% if form.status_toggle.value == value or value == 'ativo' and not form.status_toggle.value %}checked{% endif %}>
+                    <input type="radio" name="status_toggle_display" id="status_{{ value }}_top" value="{{ value }}"
+                        onchange="document.getElementById('status_toggle_hidden').value = this.value" {% if
+                        form.status_toggle.value==value or value=='ativo' and not form.status_toggle.value %}checked{%
+                        endif %}>
                     <label for="status_{{ value }}_top">{{ label }}</label>
                 </div>
                 {% endfor %}
@@ -146,57 +165,74 @@
         </div>
         {% endif %}
     </div>
-    
+
     <form method="post" enctype="multipart/form-data" id="agentForm">
         {% csrf_token %}
-        
-        <!-- Campos hidden necessários -->
-        {% if not is_create %}
-            <input type="hidden" name="organization" value="{{ agent.organization.id }}">
-            <input type="hidden" name="sector" value="{{ agent.sector|default:'geral' }}">
-            <!-- Status toggle duplicado dentro do form para enviar o valor -->
-            <input type="hidden" name="status_toggle" id="status_toggle_hidden" value="{{ form.status_toggle.value|default:'ativo' }}">
-        {% else %}
-            <!-- Campo sector com valor padrão para criação -->
-            <input type="hidden" name="sector" value="geral" id="sector_hidden">
+
+        {% if form.errors %}
+        <div
+            style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <h4 style="color: #b91c1c; margin: 0 0 0.5rem 0; font-size: 1rem;">Por favor, corrija os erros abaixo:</h4>
+            <ul style="margin: 0; padding-left: 1.5rem; color: #dc2626;">
+                {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                <li>{% if field != '__all__' %}<strong>{{ field }}:</strong> {% endif %}{{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
         {% endif %}
-        
-        <!-- SEÇÃO 1: BÁSICO -->
+
+        <!-- Campos hidden necessÃ¡rios -->
+        {% if not is_create %}
+        <input type="hidden" name="organization" value="{{ agent.organization.id }}">
+        <input type="hidden" name="sector" value="{{ agent.sector|default:'geral' }}">
+        <!-- Status toggle duplicado dentro do form para enviar o valor -->
+        <input type="hidden" name="status_toggle" id="status_toggle_hidden"
+            value="{{ form.status_toggle.value|default:'ativo' }}">
+        {% else %}
+        <!-- Campo sector com valor padrÃ£o para criaÃ§Ã£o -->
+        <input type="hidden" name="sector" value="geral" id="sector_hidden">
+        {% endif %}
+
+        <!-- SEÃ‡ÃƒO 1: BÃSICO -->
         <div style="margin-bottom: 2rem;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
+            <h3
+                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
                 </svg>
-                Informações Básicas
+                InformaÃ§Ãµes BÃ¡sicas
             </h3>
-            
+
             {% if is_create %}
             <div class="form-group">
                 {{ form.organization.label_tag }}
                 {{ form.organization }}
                 {% if form.organization.help_text %}
-                    <p class="form-help">{{ form.organization.help_text }}</p>
+                <p class="form-help">{{ form.organization.help_text }}</p>
                 {% endif %}
             </div>
             {% endif %}
-            
+
             <div class="form-group">
                 {{ form.name.label_tag }}
                 {{ form.name }}
                 {% if form.name.help_text %}
-                    <p class="form-help">{{ form.name.help_text }}</p>
+                <p class="form-help">{{ form.name.help_text }}</p>
                 {% endif %}
             </div>
-            
+
             <!-- Perfil do Agente -->
             <div class="form-group">
                 <label class="form-label">Perfil do Agente</label>
-                <p class="form-help" style="margin-bottom: 1rem;">Escolha um perfil para aplicar configurações padrão automaticamente</p>
-                
+                <p class="form-help" style="margin-bottom: 1rem;">Escolha um perfil para aplicar configuraÃ§Ãµes padrÃ£o
+                    automaticamente</p>
+
                 <div class="preset-cards">
                     {% for key, preset in presets.items %}
                     <div class="preset-card" onclick="selectPreset('{{ key }}')">
@@ -205,7 +241,7 @@
                     </div>
                     {% endfor %}
                 </div>
-                
+
                 <!-- Campo hidden para o preset -->
                 <select name="agent_preset" id="id_agent_preset" style="display: none;">
                     <option value="">---------</option>
@@ -214,74 +250,78 @@
                     {% endfor %}
                 </select>
             </div>
-            
+
             {% if is_create %}
             <div class="form-group">
                 <label class="form-label">{{ form.status_toggle.label }}</label>
                 <div class="status-toggle-container">
                     {% for value, label in form.status_toggle.field.choices %}
                     <div class="status-option {% if value == 'inativo' %}inactive{% endif %}">
-                        <input type="radio" name="status_toggle" id="status_{{ value }}" value="{{ value }}" 
-                               {% if form.status_toggle.value == value or value == 'ativo' and not form.status_toggle.value %}checked{% endif %}>
+                        <input type="radio" name="status_toggle" id="status_{{ value }}" value="{{ value }}" {% if
+                            form.status_toggle.value==value or value=='ativo' and not form.status_toggle.value
+                            %}checked{% endif %}>
                         <label for="status_{{ value }}">{{ label }}</label>
                     </div>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
-            
+
             <!-- Campo hidden para idioma (sempre pt-BR) -->
             <input type="hidden" name="language" value="pt-BR">
         </div>
-        
+
         <div class="section-divider"></div>
-        
-        <!-- SEÇÃO 2: MENSAGENS RÁPIDAS -->
+
+        <!-- SEÃ‡ÃƒO 2: MENSAGENS RÃPIDAS -->
         <div style="margin-bottom: 2rem;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
+            <h3
+                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
-                Mensagens Rápidas
+                Mensagens RÃ¡pidas
             </h3>
             <p class="form-help" style="margin-bottom: 1.5rem;">
                 Use <code>{{cliente_nome}}</code> e <code>{{agente_nome}}</code> como placeholders
             </p>
-            
+
             <div class="form-group">
                 {{ form.greeting.label_tag }}
                 {{ form.greeting }}
                 {% if form.greeting.help_text %}
-                    <p class="form-help">{{ form.greeting.help_text }}</p>
+                <p class="form-help">{{ form.greeting.help_text }}</p>
                 {% endif %}
             </div>
-            
+
             <div class="form-group">
                 {{ form.out_of_hours_message.label_tag }}
                 {{ form.out_of_hours_message }}
             </div>
-            
+
             <div class="form-group">
                 {{ form.fallback_message.label_tag }}
                 {{ form.fallback_message }}
             </div>
         </div>
-        
+
         <div class="section-divider"></div>
-        
-        <!-- SEÇÃO 3: CONHECIMENTO (DESTAQUE) -->
-        <div style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05)); padding: 1.5rem; border-radius: 12px; border: 2px dashed var(--orange-500);">
-            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
+
+        <!-- SEÃ‡ÃƒO 3: CONHECIMENTO (DESTAQUE) -->
+        <div
+            style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(251, 191, 36, 0.05)); padding: 1.5rem; border-radius: 12px; border: 2px dashed var(--orange-500);">
+            <h3
+                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                 </svg>
                 Base de Conhecimento
             </h3>
             <p class="form-help" style="margin-bottom: 1.5rem;">
-                Esta é a principal fonte de informação do seu agente
+                Esta Ã© a principal fonte de informaÃ§Ã£o do seu agente
             </p>
-            
+
             {% if agent and agent.knowledge_pdf %}
             <div class="pdf-preview">
                 <div class="pdf-info">
@@ -291,29 +331,34 @@
                             {{ agent.knowledge_pdf.name|default:"Documento.pdf" }}
                         </h4>
                         <p style="margin: 0; font-size: 0.875rem; color: var(--gray-600);">
-                            {% if agent.knowledge_pdf_category %}{{ agent.knowledge_pdf_category }} • {% endif %}
+                            {% if agent.knowledge_pdf_category %}{{ agent.knowledge_pdf_category }} â€¢ {% endif %}
                             Enviado em {{ agent.created_at|date:"d/m/Y" }}
                         </p>
                     </div>
-                    <a href="{% url 'agents:delete_pdf' agent.slug %}" class="btn btn-secondary" style="background: #ef4444; color: white; display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="{% url 'agents:delete_pdf' agent.slug %}" class="btn btn-secondary"
+                        style="background: #ef4444; color: white; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                         </svg>
                         Remover
                     </a>
                 </div>
-                
+
                 {% if agent.knowledge_pdf_text %}
                 <details>
-                    <summary style="cursor: pointer; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <summary
+                        style="cursor: pointer; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                         </svg>
-                        Ver preview do texto extraído
+                        Ver preview do texto extraÃ­do
                     </summary>
-                    <div style="background: white; padding: 1rem; border-radius: 6px; font-family: monospace; font-size: 0.875rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">{{ agent.knowledge_pdf_text|slice:":1000" }}{% if agent.knowledge_pdf_text|length > 1000 %}...{% endif %}</div>
+                    <div
+                        style="background: white; padding: 1rem; border-radius: 6px; font-family: monospace; font-size: 0.875rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+                        {{ agent.knowledge_pdf_text|slice:":1000" }}{% if agent.knowledge_pdf_text|length > 1000 %}...{%
+                        endif %}</div>
                 </details>
                 {% endif %}
             </div>
@@ -322,145 +367,153 @@
                 {{ form.knowledge_pdf.label_tag }}
                 {{ form.knowledge_pdf }}
                 {% if form.knowledge_pdf.help_text %}
-                    <p class="form-help">{{ form.knowledge_pdf.help_text }}</p>
+                <p class="form-help">{{ form.knowledge_pdf.help_text }}</p>
                 {% endif %}
             </div>
             {% endif %}
-            
+
             <div class="form-group">
                 {{ form.knowledge_pdf_category.label_tag }}
                 {{ form.knowledge_pdf_category }}
             </div>
-            
+
             <div class="form-group">
                 {{ form.knowledge_base.label_tag }}
                 {{ form.knowledge_base }}
                 {% if form.knowledge_base.help_text %}
-                    <p class="form-help">{{ form.knowledge_base.help_text }}</p>
+                <p class="form-help">{{ form.knowledge_base.help_text }}</p>
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="section-divider"></div>
-        
-        <!-- SEÇÃO 4: ATENDIMENTO HUMANO -->
+
+        <!-- SEÃ‡ÃƒO 4: ATENDIMENTO HUMANO -->
         <div style="margin-bottom: 2rem;">
-            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
+            <h3
+                style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
                 Atendimento Humano
             </h3>
-            
+
             <div class="form-group">
-                <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; border: 2px solid var(--gray-300); border-radius: 8px; transition: all 0.2s;">
+                <label
+                    style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; border: 2px solid var(--gray-300); border-radius: 8px; transition: all 0.2s;">
                     {{ form.enable_human_transfer }}
                     <div>
-                        <div style="font-weight: 600; color: var(--gray-900);">{{ form.enable_human_transfer.label }}</div>
-                        <div style="font-size: 0.875rem; color: var(--gray-600);">Permite que o cliente solicite falar com uma pessoa</div>
+                        <div style="font-weight: 600; color: var(--gray-900);">{{ form.enable_human_transfer.label }}
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--gray-600);">Permite que o cliente solicite falar
+                            com uma pessoa</div>
                     </div>
                 </label>
             </div>
-            
-            <div class="transfer-fields" id="transferFields" style="{% if not form.enable_human_transfer.value %}display: none;{% endif %}">
+
+            <div class="transfer-fields" id="transferFields"
+                style="{% if not form.enable_human_transfer.value %}display: none;{% endif %}">
                 <div class="form-group">
                     {{ form.transfer_keywords.label_tag }}
                     {{ form.transfer_keywords }}
                     {% if form.transfer_keywords.help_text %}
-                        <p class="form-help">{{ form.transfer_keywords.help_text }}</p>
+                    <p class="form-help">{{ form.transfer_keywords.help_text }}</p>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.transfer_failures_threshold.label_tag }}
                     {{ form.transfer_failures_threshold }}
                 </div>
             </div>
         </div>
-        
+
         <div class="section-divider"></div>
-        
-        <!-- SEÇÃO 5: AVANÇADO (COLAPSADO) -->
+
+        <!-- SEÃ‡ÃƒO 5: AVANÃ‡ADO (COLAPSADO) -->
         <details style="margin-bottom: 2rem;">
-            <summary style="cursor: pointer; padding: 1rem; background: var(--gray-50); border-radius: 8px; font-weight: 600; font-size: 1.125rem; color: var(--gray-700); display: flex; align-items: center; gap: 0.5rem;">
+            <summary
+                style="cursor: pointer; padding: 1rem; background: var(--gray-50); border-radius: 8px; font-weight: 600; font-size: 1.125rem; color: var(--gray-700); display: flex; align-items: center; gap: 0.5rem;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24" />
                 </svg>
-                Configurações Avançadas (opcional)
+                ConfiguraÃ§Ãµes AvanÃ§adas (opcional)
             </summary>
-            
+
             <div style="padding: 1.5rem 0;">
                 <div class="form-group">
                     {{ form.sector.label_tag }}
                     {{ form.sector }}
                     <script>
-                    // Sincronizar campo sector visível com hidden
-                    {% if is_create %}
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const sectorField = document.querySelector('input[name="sector"]:not([type="hidden"]), select[name="sector"]');
-                        const sectorHidden = document.getElementById('sector_hidden');
-                        if (sectorField && sectorHidden) {
-                            sectorField.addEventListener('change', function() {
-                                sectorHidden.value = this.value || 'geral';
-                            });
-                            sectorField.addEventListener('input', function() {
-                                sectorHidden.value = this.value || 'geral';
-                            });
-                        }
-                    });
-                    {% endif %}
+                        // Sincronizar campo sector visÃ­vel com hidden
+                        {% if is_create %}
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const sectorField = document.querySelector('input[name="sector"]:not([type="hidden"]), select[name="sector"]');
+                            const sectorHidden = document.getElementById('sector_hidden');
+                            if (sectorField && sectorHidden) {
+                                sectorField.addEventListener('change', function () {
+                                    sectorHidden.value = this.value || 'geral';
+                                });
+                                sectorField.addEventListener('input', function () {
+                                    sectorHidden.value = this.value || 'geral';
+                                });
+                            }
+                        });
+                        {% endif %}
                     </script>
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.personality.label_tag }}
                     {{ form.personality }}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.tone.label_tag }}
                     {{ form.tone }}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.style_guidelines.label_tag }}
                     {{ form.style_guidelines }}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.escalation_rule.label_tag }}
                     {{ form.escalation_rule }}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.max_response_time.label_tag }}
                     {{ form.max_response_time }}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.n8n_webhook_url.label_tag }}
                     {{ form.n8n_webhook_url }}
                 </div>
             </div>
         </details>
-        
-        <!-- BOTÕES DE AÇÃO -->
+
+        <!-- BOTÃ•ES DE AÃ‡ÃƒO -->
         <div style="display: flex; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
-            <button type="submit" class="btn btn-primary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary"
+                style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     {% if is_create %}
-                    <path d="M12 5v14M5 12h14"/>
+                    <path d="M12 5v14M5 12h14" />
                     {% else %}
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
                     {% endif %}
                 </svg>
-                {% if is_create %}Criar Agente{% else %}Salvar Alterações{% endif %}
+                {% if is_create %}Criar Agente{% else %}Salvar AlteraÃ§Ãµes{% endif %}
             </button>
             <a href="{% url 'agents:list' %}" class="btn btn-secondary">
                 Cancelar
@@ -470,47 +523,47 @@
 </div>
 
 <script>
-function selectPreset(key) {
-    // Atualizar campo hidden
-    document.querySelector('select[name="agent_preset"]').value = key;
-    
-    // Atualizar visual
-    document.querySelectorAll('.preset-card').forEach(card => {
-        card.classList.remove('selected');
-    });
-    event.currentTarget.classList.add('selected');
-}
+    function selectPreset(key) {
+        // Atualizar campo hidden
+        document.querySelector('select[name="agent_preset"]').value = key;
 
-function toggleTransferFields() {
-    const checkbox = document.querySelector('input[name="enable_human_transfer"]');
-    const fields = document.getElementById('transferFields');
-    
-    if (checkbox.checked) {
-        fields.style.display = 'block';
-    } else {
-        fields.style.display = 'none';
-    }
-}
-
-// Inicializar preset selecionado
-document.addEventListener('DOMContentLoaded', function() {
-    const selectedPreset = document.querySelector('select[name="agent_preset"]').value;
-    if (selectedPreset) {
-        const cards = document.querySelectorAll('.preset-card');
-        cards.forEach((card, index) => {
-            const presetKeys = ['sales', 'reception', 'support', 'neutral'];
-            if (presetKeys[index] === selectedPreset) {
-                card.classList.add('selected');
-            }
+        // Atualizar visual
+        document.querySelectorAll('.preset-card').forEach(card => {
+            card.classList.remove('selected');
         });
+        event.currentTarget.classList.add('selected');
     }
-    
-    // Toggle transfer fields
-    const checkbox = document.querySelector('input[name="enable_human_transfer"]');
-    if (checkbox) {
-        checkbox.addEventListener('change', toggleTransferFields);
+
+    function toggleTransferFields() {
+        const checkbox = document.querySelector('input[name="enable_human_transfer"]');
+        const fields = document.getElementById('transferFields');
+
+        if (checkbox.checked) {
+            fields.style.display = 'block';
+        } else {
+            fields.style.display = 'none';
+        }
     }
-});
+
+    // Inicializar preset selecionado
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectedPreset = document.querySelector('select[name="agent_preset"]').value;
+        if (selectedPreset) {
+            const cards = document.querySelectorAll('.preset-card');
+            cards.forEach((card, index) => {
+                const presetKeys = ['sales', 'reception', 'support', 'neutral'];
+                if (presetKeys[index] === selectedPreset) {
+                    card.classList.add('selected');
+                }
+            });
+        }
+
+        // Toggle transfer fields
+        const checkbox = document.querySelector('input[name="enable_human_transfer"]');
+        if (checkbox) {
+            checkbox.addEventListener('change', toggleTransferFields);
+        }
+    });
 </script>
 
 {% endblock %}

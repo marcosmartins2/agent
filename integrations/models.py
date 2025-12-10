@@ -1,16 +1,16 @@
 from django.db import models
-from organizations.models import Organization
+from organizations.models import Padaria
 
 
 class N8nConfig(models.Model):
     """
-    Configuração de integração com n8n por organização.
+    Configuração de integração com n8n por padaria.
     """
-    organization = models.OneToOneField(
-        Organization,
+    padaria = models.OneToOneField(
+        Padaria,
         on_delete=models.CASCADE,
         related_name="n8n_config",
-        verbose_name="Organização"
+        verbose_name="Padaria"
     )
     webhook_url = models.URLField(
         max_length=500,
@@ -37,4 +37,4 @@ class N8nConfig(models.Model):
         verbose_name_plural = "Configurações n8n"
 
     def __str__(self):
-        return f"n8n Config - {self.organization.name}"
+        return f"n8n Config - {self.padaria.name}"

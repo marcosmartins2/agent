@@ -1,0 +1,38 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}Agentes - Admin{% endblock %}
+{% block page_title %}Agentes{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h2 class="content-title">Agentes</h2>
+        <p class="content-subtitle">{{ agents.paginator.count }} agente(s) no sistema</p>
+    </div>
+</div>
+
+<div class="card">
+    {% if agents %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Padaria</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for agent in agents %}
+            <tr>
+                <td><a href="{% url 'admin_panel:agent_detail' agent.slug %}" class="admin-link">{{ agent.name }}</a></td>
+                <td>{{ agent.padaria.name }}</td>
+                <td>{% if agent.status == 'ativo' %}<span class="badge badge-success">Ativo</span>{% else %}<span class="badge badge-inactive">Inativo</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum agente encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

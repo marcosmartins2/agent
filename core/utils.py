@@ -34,16 +34,18 @@ def require_api_key(view_func):
         
         # Validar API key
         try:
-            api_key = ApiKey.objects.select_related('organization').get(
+            api_key = ApiKey.objects.select_related('padaria').get(
                 key=api_key_value,
                 is_active=True
             )
         except ApiKey.DoesNotExist:
             return JsonResponse({"error": "Invalid or inactive API key"}, status=401)
         
-        # Anexar API key e organização ao request
+        # Anexar API key e padaria ao request
         request.api_key = api_key
-        request.organization = api_key.organization
+        request.padaria = api_key.padaria
+        # Alias para compatibilidade
+        request.organization = api_key.padaria
         
         return view_func(request, *args, **kwargs)
     

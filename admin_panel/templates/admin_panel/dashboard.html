@@ -1,0 +1,61 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+{% block page_title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div>
+        <h2 class="content-title">Dashboard</h2>
+        <p class="content-subtitle">Visao geral do sistema</p>
+    </div>
+    <a href="{% url 'admin_panel:padaria_create' %}" class="btn btn-primary">+ Novo Cliente</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">Padarias Cadastradas</div>
+        </div>
+        <div class="stat-value">{{ total_padarias }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">Padarias Ativas</div>
+        </div>
+        <div class="stat-value">{{ padarias_ativas }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">Agentes Criados</div>
+        </div>
+        <div class="stat-value">{{ total_agents }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Padarias Recentes</h3>
+    {% if padarias_recentes %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Dono</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for padaria in padarias_recentes %}
+            <tr>
+                <td><a href="{% url 'admin_panel:padaria_detail' padaria.slug %}" class="admin-link">{{ padaria.name }}</a></td>
+                <td>{{ padaria.owner.username }}</td>
+                <td>{% if padaria.is_active %}<span class="badge badge-success">Ativa</span>{% else %}<span class="badge badge-inactive">Inativa</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhuma padaria cadastrada.</p>
+    {% endif %}
+</div>
+{% endblock %}

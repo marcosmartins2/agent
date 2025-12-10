@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "api",
     "ui",
     "audit",
+    "admin_panel",
 ]
 
 MIDDLEWARE = [

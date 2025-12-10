@@ -1,0 +1,134 @@
+﻿{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ padaria.name }} - Admin{% endblock %}
+{% block page_title %}{{ padaria.name }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a> /
+    <a href="{% url 'admin_panel:padarias_list' %}">Padarias</a> /
+    <span>{{ padaria.name }}</span>
+</div>
+
+<div class="content-header">
+    <div>
+        <h2 class="content-title">{{ padaria.name }}</h2>
+        <p class="content-subtitle">
+            {% if padaria.is_active %}<span class="badge badge-success">Ativa</span>{% else %}<span
+                class="badge badge-inactive">Inativa</span>{% endif %}
+            - Criada em {{ padaria.created_at|date:"d/m/Y" }}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'admin_panel:padaria_edit' padaria.slug %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'admin_panel:padaria_apikey' padaria.slug %}" class="btn btn-secondary">API Keys</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">Dono</div>
+        </div>
+        <div class="stat-value" style="font-size: 1.25rem;">{{ padaria.owner.username }}</div>
+        <div style="font-size: 0.75rem; color: var(--gray-500);">{{ padaria.owner.email }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">CNPJ</div>
+        </div>
+        <div class="stat-value" style="font-size: 1rem;">{{ padaria.cnpj|default:"-" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">Agente</div>
+        </div>
+        <div class="stat-value">{% if agent %}1{% else %}0{% endif %}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-title">API Keys</div>
+        </div>
+        <div class="stat-value">{{ api_keys.count }}</div>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3 class="card-title">Informacoes de Contato</h3>
+        <table class="admin-table">
+            <tr>
+                <td><strong>Telefone</strong></td>
+                <td>{{ padaria.phone|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>E-mail</strong></td>
+                <td>{{ padaria.email|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Endereco</strong></td>
+                <td>{{ padaria.address|default:"-" }}</td>
+            </tr>
+            <tr>
+                <td><strong>Slug</strong></td>
+                <td>{{ padaria.slug }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title">Agente de IA</h3>
+        {% if agent %}
+        <table class="admin-table">
+            <tr>
+                <td><strong>Nome</strong></td>
+                <td>{{ agent.name }}</td>
+            </tr>
+            <tr>
+                <td><strong>Funcao</strong></td>
+                <td>{{ agent.role }}</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td>{% if agent.status == 'ativo' %}<span class="badge badge-success">Ativo</span>{% else %}<span
+                        class="badge badge-inactive">{{ agent.status }}</span>{% endif %}</td>
+            </tr>
+        </table>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'admin_panel:agent_detail' agent.slug %}" class="admin-link">Ver detalhes do agente</a>
+        </div>
+        {% else %}
+        <p style="margin-bottom: 1rem;">Nenhum agente configurado.</p>
+        <a href="{% url 'agents:create' %}?padaria={{ padaria.slug }}" class="btn btn-primary">+ Criar Agente</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Logs Recentes</h3>
+    {% if logs %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Usuario</th>
+                <th>Acao</th>
+                <th>Entidade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.created_at|date:"d/m/Y H:i" }}</td>
+                <td>{{ log.actor.username|default:"Sistema" }}</td>
+                <td><span class="badge badge-info">{{ log.action }}</span></td>
+                <td>{{ log.entity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum log encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -21,29 +21,29 @@ def get_agent_config(request, slug):
     Requer autenticação via API key.
     """
     # Rate limiting
-    org = request.api_key.organization
-    cache_key = f"api_rate_{org.id}_{get_client_ip(request)}"
+    padaria = request.api_key.padaria
+    cache_key = f"api_rate_{padaria.id}_{get_client_ip(request)}"
     
     if not rate_limited(cache_key, limit=60, window_seconds=60):
         return JsonResponse({"error": "Rate limit exceeded"}, status=429)
     
     # Buscar agente
     try:
-        agent = Agent.objects.get(slug=slug, organization=org, is_active=True)
+        agent = Agent.objects.get(slug=slug, padaria=padaria, is_active=True)
     except Agent.DoesNotExist:
         # Log de debug para ajudar a identificar o problema
         print(f"DEBUG API - Agente não encontrado:")
         print(f"  - Slug buscado: {slug}")
-        print(f"  - Organização da API Key: {org.name} (ID: {org.id})")
-        print(f"  - Agentes disponíveis nesta org:")
-        for a in Agent.objects.filter(organization=org):
+        print(f"  - Padaria da API Key: {padaria.name} (ID: {padaria.id})")
+        print(f"  - Agentes disponíveis nesta padaria:")
+        for a in Agent.objects.filter(padaria=padaria):
             print(f"    - {a.slug} (ativo: {a.is_active})")
         return JsonResponse({
             "error": "Agent not found",
             "details": {
                 "slug": slug,
-                "organization": org.name,
-                "hint": "Verifique se o agente pertence à organização desta API Key e está ativo"
+                "padaria": padaria.name,
+                "hint": "Verifique se o agente pertence à padaria desta API Key e está ativo"
             }
         }, status=404)
     
@@ -51,7 +51,7 @@ def get_agent_config(request, slug):
     AuditLog.log(
         action="api_call",
         entity="Agent",
-        organization=org,
+        organization=padaria,
         entity_id=agent.id,
         diff={
             "endpoint": "get_agent_config",
@@ -75,10 +75,15 @@ def get_agent_config(request, slug):
         "language": agent.language,
         "greeting": agent.greeting,
         "tone": agent.tone,
+        "personality": agent.personality,
         "style_guidelines": agent.style_guidelines,
         "business_hours": agent.business_hours,
         "fallback_message": agent.fallback_message,
         "escalation_rule": agent.escalation_rule,
+        "padaria": {
+            "name": padaria.name,
+            "slug": padaria.slug,
+        },
         "updated_at": agent.updated_at.isoformat(),
     }
     
@@ -92,21 +97,21 @@ def get_agent_knowledge(request, slug):
     Retorna apenas a base de conhecimento de um agente.
     Endpoint separado para não sobrecarregar a API principal.
     """
-    org = request.api_key.organization
+    padaria = request.api_key.padaria
     
     # Buscar agente
     try:
-        agent = Agent.objects.get(slug=slug, organization=org, is_active=True)
+        agent = Agent.objects.get(slug=slug, padaria=padaria, is_active=True)
     except Agent.DoesNotExist:
         # Log de debug
         print(f"DEBUG API Knowledge - Agente não encontrado:")
         print(f"  - Slug buscado: {slug}")
-        print(f"  - Organização da API Key: {org.name} (ID: {org.id})")
+        print(f"  - Padaria da API Key: {padaria.name} (ID: {padaria.id})")
         return JsonResponse({
             "error": "Agent not found",
             "details": {
                 "slug": slug,
-                "organization": org.name
+                "padaria": padaria.name
             }
         }, status=404)
     
@@ -114,7 +119,7 @@ def get_agent_knowledge(request, slug):
     AuditLog.log(
         action="api_call",
         entity="Agent",
-        organization=org,
+        organization=padaria,
         entity_id=agent.id,
         diff={
             "endpoint": "get_agent_knowledge",
@@ -129,6 +134,7 @@ def get_agent_knowledge(request, slug):
         "slug": agent.slug,
         "knowledge_base": agent.knowledge_base,
         "has_pdf": bool(agent.knowledge_pdf),
+        "pdf_text": agent.knowledge_pdf_text if agent.knowledge_pdf else None,
         "updated_at": agent.updated_at.isoformat(),
     }
     

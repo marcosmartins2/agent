@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('enabled', models.BooleanField(default=False, help_text='Ativar/desativar integração', verbose_name='Habilitado')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Criado em')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Atualizado em')),
-                ('organization', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='n8n_config', to='organizations.organization', verbose_name='Organização')),
+                ('padaria', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='n8n_config', to='organizations.padaria', verbose_name='Padaria')),
             ],
             options={
                 'verbose_name': 'Configuração n8n',

@@ -33,11 +33,11 @@ def receive_event(request):
         }, status=400)
     
     # Log do evento
-    org = request.api_key.organization
+    padaria = request.api_key.padaria
     AuditLog.log(
         action="webhook_received",
         entity="n8n_event",
-        organization=org,
+        organization=padaria,
         entity_id=session_id,
         diff={
             "type": event_type,

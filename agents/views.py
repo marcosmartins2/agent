@@ -5,29 +5,47 @@ from .models import Agent
 from .utils import extract_text_from_pdf
 from .forms import AgentSimpleForm
 from .presets import get_preset_defaults, AGENT_PRESETS
-from organizations.models import Organization
+from organizations.models import Padaria, PadariaUser
+from core.permissions import get_user_padaria, get_user_role
 from audit.models import AuditLog
 import requests
 import json
 
 
+def get_user_padarias(user):
+    """Retorna padarias que o usuário pode acessar."""
+    if user.is_superuser:
+        return Padaria.objects.all()
+    
+    memberships = PadariaUser.objects.filter(user=user).values_list('padaria_id', flat=True)
+    return Padaria.objects.filter(id__in=memberships)
+
+
 @login_required
 def agent_list(request):
     """Lista de agentes do usuário."""
-    agents = Agent.objects.filter(organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agents = Agent.objects.filter(padaria__in=padarias).select_related('padaria')
     return render(request, "agents/list.html", {"agents": agents})
 
 
 @login_required
 def agent_detail(request, slug):
     """Detalhe de um agente."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agent = get_object_or_404(Agent, slug=slug, padaria__in=padarias)
     return render(request, "agents/detail.html", {"agent": agent})
 
 
 @login_required
 def agent_create(request):
     """Criar novo agente com formulário simplificado."""
+    # Verificar se o usuário é dono de alguma padaria
+    user_role = get_user_role(request.user)
+    if user_role not in ['admin_master', 'dono']:
+        messages.error(request, "Apenas donos de padaria podem criar agentes.")
+        return redirect("agents:list")
+    
     if request.method == "POST":
         print("DEBUG CREATE - POST recebido")
         print(f"DEBUG CREATE - action: {request.POST.get('action')}")
@@ -65,6 +83,17 @@ def agent_create(request):
                 print(f"  - {field}: {errors}")
         
         if form.is_valid():
+            padaria = form.cleaned_data.get('padaria')
+            
+            # Verificar limite de 1 agente por padaria
+            if padaria.has_agent():
+                messages.error(request, f"A padaria '{padaria.name}' já possui um agente. Cada padaria pode ter apenas 1 agente.")
+                return render(request, "agents/form_new.html", {
+                    "form": form,
+                    "presets": AGENT_PRESETS,
+                    "is_create": True
+                })
+            
             agent = form.save(commit=False)
             agent.status = form.cleaned_data.get('status', 'ativo')
             
@@ -98,7 +127,7 @@ def agent_create(request):
                             "pdf_category": agent.knowledge_pdf_category or "Sem categoria",
                             "extracted_text": extracted_text,
                             "text_length": len(extracted_text),
-                            "organization": agent.organization.name,
+                            "padaria": agent.padaria.name,
                             "uploaded_by": request.user.email
                         }
                         
@@ -124,7 +153,7 @@ def agent_create(request):
             AuditLog.log(
                 action="create",
                 entity="Agent",
-                organization=agent.organization,
+                organization=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"name": agent.name, "slug": agent.slug}
@@ -133,7 +162,17 @@ def agent_create(request):
             messages.success(request, f"Agente '{agent.name}' criado com sucesso! ✨")
             return redirect("agents:detail", slug=agent.slug)
     else:
-        form = AgentSimpleForm(user=request.user)
+        # Check for padaria query param to pre-select
+        padaria_slug = request.GET.get('padaria')
+        initial = {}
+        if padaria_slug:
+            from organizations.models import Padaria
+            try:
+                padaria = Padaria.objects.get(slug=padaria_slug)
+                initial['padaria'] = padaria.id
+            except Padaria.DoesNotExist:
+                pass
+        form = AgentSimpleForm(user=request.user, initial=initial)
     
     return render(request, "agents/form_new.html", {
         "form": form,
@@ -143,74 +182,16 @@ def agent_create(request):
 
 
 @login_required
-def agent_create_old(request):
-    """Criar novo agente - VERSÃO ANTIGA."""
-    if request.method == "POST":
-        org_id = request.POST.get("organization")
-        name = request.POST.get("name")
-        role = request.POST.get("role", "atendente")
-        sector = request.POST.get("sector", "manicure/pedicure")
-        
-        organization = get_object_or_404(Organization, id=org_id, owner=request.user)
-        
-        # Criar agente com novos campos
-        agent = Agent.objects.create(
-            organization=organization,
-            name=name,
-            role=role,
-            sector=sector,
-            language=request.POST.get("language", "pt-BR"),
-            status=request.POST.get("status", "ativo"),
-            personality=request.POST.get("personality", "amigavel"),
-            greeting=request.POST.get("greeting", ""),
-            out_of_hours_message=request.POST.get("out_of_hours_message", ""),
-            transfer_keywords=request.POST.get("transfer_keywords", "falar com humano, atendente, pessoa"),
-            max_response_time=int(request.POST.get("max_response_time", 30)),
-            tone=request.POST.get("tone", ""),
-            style_guidelines=request.POST.get("style_guidelines", ""),
-            knowledge_base=request.POST.get("knowledge_base", ""),
-            fallback_message=request.POST.get("fallback_message", ""),
-            escalation_rule=request.POST.get("escalation_rule", ""),
-            n8n_webhook_url=request.POST.get("n8n_webhook_url", ""),
-        )
-        
-        # Processar upload de PDF se houver
-        if 'knowledge_pdf' in request.FILES:
-            pdf_file = request.FILES['knowledge_pdf']
-            agent.knowledge_pdf = pdf_file
-            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category", "")
-            
-            try:
-                # Extrair texto do PDF automaticamente
-                extracted_text = extract_text_from_pdf(pdf_file)
-                agent.knowledge_pdf_text = extracted_text
-                
-                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extraídos.")
-            except Exception as e:
-                messages.warning(request, f"Erro ao processar PDF: {str(e)}")
-            
-            agent.save()
-        
-        AuditLog.log(
-            action="create",
-            entity="Agent",
-            organization=organization,
-            actor=request.user,
-            entity_id=agent.id,
-            diff={"name": name, "slug": agent.slug}
-        )
-        
-        messages.success(request, f"Agente '{name}' criado com sucesso!")
-        return redirect("agents:detail", slug=agent.slug)
-    
-    organizations = Organization.objects.filter(owner=request.user)
-    return render(request, "agents/form.html", {"organizations": organizations})
-
-
-@login_required
 def agent_edit(request, slug):
     """Editar agente com formulário simplificado."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agent = get_object_or_404(Agent, slug=slug, padaria__in=padarias)
+    
+    # Verificar permissão (dono ou funcionário pode editar)
+    user_role = get_user_role(request.user, agent.padaria)
+    if user_role not in ['admin_master', 'dono', 'funcionario']:
+        messages.error(request, "Você não tem permissão para editar este agente.")
+        return redirect("agents:list")
     
     if request.method == "POST":
         # Verificar se é aplicação de preset
@@ -267,14 +248,8 @@ def agent_edit(request, slug):
                 except Exception as e:
                     messages.warning(request, f"Erro ao processar PDF: {str(e)}")
             
-            # DEBUG: Log para verificar condições
-            print(f"DEBUG - agent.knowledge_pdf: {agent.knowledge_pdf}")
-            print(f"DEBUG - agent.knowledge_pdf_text existe: {bool(agent.knowledge_pdf_text)}")
-            print(f"DEBUG - Tamanho do texto: {len(agent.knowledge_pdf_text) if agent.knowledge_pdf_text else 0}")
-            
             # Se tem PDF (novo ou existente), enviar para n8n
             if agent.knowledge_pdf and agent.knowledge_pdf_text:
-                print("DEBUG - Entrou no bloco de envio para n8n")
                 try:
                     webhook_url = "https://n8n.newcouros.com.br/webhook/memoria"
                     payload = {
@@ -285,13 +260,10 @@ def agent_edit(request, slug):
                         "pdf_category": agent.knowledge_pdf_category or "Sem categoria",
                         "extracted_text": extracted_text or agent.knowledge_pdf_text,
                         "text_length": len(extracted_text or agent.knowledge_pdf_text),
-                        "organization": agent.organization.name,
+                        "padaria": agent.padaria.name,
                         "uploaded_by": request.user.email,
                         "action": "new_upload" if pdf_updated else "update"
                     }
-                    
-                    print(f"DEBUG - Enviando para webhook: {webhook_url}")
-                    print(f"DEBUG - Payload keys: {payload.keys()}")
                     
                     response = requests.post(
                         webhook_url,
@@ -299,9 +271,6 @@ def agent_edit(request, slug):
                         headers={'Content-Type': 'application/json'},
                         timeout=10
                     )
-                    
-                    print(f"DEBUG - Response status: {response.status_code}")
-                    print(f"DEBUG - Response body: {response.text[:200]}")
                     
                     if response.status_code == 200:
                         if pdf_updated:
@@ -313,17 +282,14 @@ def agent_edit(request, slug):
                             messages.success(request, f"PDF atualizado! {len(extracted_text)} caracteres extraídos.")
                         messages.warning(request, f"Webhook n8n retornou status {response.status_code}")
                 except requests.exceptions.RequestException as webhook_error:
-                    print(f"DEBUG - Erro no webhook: {webhook_error}")
                     if pdf_updated:
                         messages.success(request, f"PDF atualizado! {len(extracted_text)} caracteres extraídos.")
                     messages.warning(request, f"Erro ao enviar para n8n: {str(webhook_error)}")
-            else:
-                print(f"DEBUG - NÃO entrou no bloco de envio. PDF: {bool(agent.knowledge_pdf)}, Text: {bool(agent.knowledge_pdf_text)}")
             
             AuditLog.log(
                 action="update",
                 entity="Agent",
-                organization=agent.organization,
+                organization=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"name": agent.name}
@@ -343,78 +309,25 @@ def agent_edit(request, slug):
 
 
 @login_required
-def agent_edit_old(request, slug):
-    """Editar agente - VERSÃO ANTIGA."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
-    
-    if request.method == "POST":
-        agent.name = request.POST.get("name", agent.name)
-        agent.role = request.POST.get("role", agent.role)
-        agent.sector = request.POST.get("sector", agent.sector)
-        agent.language = request.POST.get("language", agent.language)
-        agent.status = request.POST.get("status", agent.status)
-        agent.personality = request.POST.get("personality", agent.personality)
-        agent.greeting = request.POST.get("greeting", agent.greeting)
-        agent.out_of_hours_message = request.POST.get("out_of_hours_message", agent.out_of_hours_message)
-        agent.transfer_keywords = request.POST.get("transfer_keywords", agent.transfer_keywords)
-        agent.max_response_time = int(request.POST.get("max_response_time", agent.max_response_time))
-        agent.tone = request.POST.get("tone", agent.tone)
-        agent.style_guidelines = request.POST.get("style_guidelines", agent.style_guidelines)
-        agent.knowledge_base = request.POST.get("knowledge_base", agent.knowledge_base)
-        agent.fallback_message = request.POST.get("fallback_message", agent.fallback_message)
-        agent.escalation_rule = request.POST.get("escalation_rule", agent.escalation_rule)
-        agent.n8n_webhook_url = request.POST.get("n8n_webhook_url", agent.n8n_webhook_url)
-        agent.is_active = request.POST.get("is_active") == "on"
-        
-        # Processar upload de PDF se houver
-        if 'knowledge_pdf' in request.FILES:
-            pdf_file = request.FILES['knowledge_pdf']
-            agent.knowledge_pdf = pdf_file
-            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category", agent.knowledge_pdf_category)
-            
-            try:
-                # Extrair texto do PDF automaticamente
-                extracted_text = extract_text_from_pdf(pdf_file)
-                agent.knowledge_pdf_text = extracted_text
-                    
-                messages.success(request, f"PDF processado com sucesso! {len(extracted_text)} caracteres extraídos.")
-            except Exception as e:
-                messages.warning(request, f"Erro ao processar PDF: {str(e)}")
-        
-        # Atualizar categoria do PDF sem fazer novo upload
-        elif request.POST.get("knowledge_pdf_category"):
-            agent.knowledge_pdf_category = request.POST.get("knowledge_pdf_category")
-        
-        agent.save()
-        
-        AuditLog.log(
-            action="update",
-            entity="Agent",
-            organization=agent.organization,
-            actor=request.user,
-            entity_id=agent.id,
-            diff={"name": agent.name}
-        )
-        
-        messages.success(request, "Agente atualizado com sucesso!")
-        return redirect("agents:detail", slug=agent.slug)
-    
-    return render(request, "agents/form.html", {"agent": agent})
-
-
-@login_required
 def agent_delete(request, slug):
     """Deletar agente."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agent = get_object_or_404(Agent, slug=slug, padaria__in=padarias)
+    
+    # Verificar permissão (apenas dono pode deletar)
+    user_role = get_user_role(request.user, agent.padaria)
+    if user_role not in ['admin_master', 'dono']:
+        messages.error(request, "Apenas donos de padaria podem deletar agentes.")
+        return redirect("agents:list")
     
     if request.method == "POST":
-        organization = agent.organization
+        padaria = agent.padaria
         agent_name = agent.name
         
         AuditLog.log(
             action="delete",
             entity="Agent",
-            organization=organization,
+            organization=padaria,
             actor=request.user,
             entity_id=agent.id,
             diff={"name": agent_name, "slug": slug}
@@ -430,7 +343,8 @@ def agent_delete(request, slug):
 @login_required
 def agent_playground(request, slug):
     """Playground para testar agente."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agent = get_object_or_404(Agent, slug=slug, padaria__in=padarias)
     
     # Renderizar greeting com valores de exemplo
     cliente_nome = request.POST.get("cliente_nome", "Maria")
@@ -448,7 +362,14 @@ def agent_playground(request, slug):
 @login_required
 def agent_delete_pdf(request, slug):
     """Deletar PDF de conhecimento do agente."""
-    agent = get_object_or_404(Agent, slug=slug, organization__owner=request.user)
+    padarias = get_user_padarias(request.user)
+    agent = get_object_or_404(Agent, slug=slug, padaria__in=padarias)
+    
+    # Verificar permissão
+    user_role = get_user_role(request.user, agent.padaria)
+    if user_role not in ['admin_master', 'dono', 'funcionario']:
+        messages.error(request, "Você não tem permissão para esta ação.")
+        return redirect("agents:list")
     
     if request.method == "POST":
         if agent.knowledge_pdf:
@@ -462,7 +383,7 @@ def agent_delete_pdf(request, slug):
             AuditLog.log(
                 action="delete_pdf",
                 entity="Agent",
-                organization=agent.organization,
+                organization=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"agent": agent.name, "action": "PDF deletado"}
@@ -475,4 +396,3 @@ def agent_delete_pdf(request, slug):
         return redirect("agents:detail", slug=agent.slug)
     
     return render(request, "agents/confirm_delete_pdf.html", {"agent": agent})
-
