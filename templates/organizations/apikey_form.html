@@ -74,10 +74,15 @@ Content-Type: application/json</pre>
             </svg>
             Para que serve uma Chave API?
         </h3>
-        <p style="color: #92400e; line-height: 1.6; font-size: 0.9375rem;">
-            A Chave API permite que você <strong>conecte seus agentes de IA a ferramentas externas</strong> como n8n, Zapier, Make.com ou sua própria aplicação. 
-            Com ela, você pode enviar mensagens para os agentes e receber respostas, mantendo todas as conversas registradas na plataforma.
+        <p style="color: #92400e; line-height: 1.6; font-size: 0.9375rem; margin-bottom: 0;">
+            A Chave API permite que você <strong>conecte {% if is_admin %}seus agentes{% else %}seu agente{% endif %} de IA a ferramentas externas</strong> como n8n, Zapier, Make.com ou sua própria aplicação. 
+            Com ela, você pode enviar mensagens para {% if is_admin %}os agentes{% else %}o agente{% endif %} e receber respostas, mantendo todas as conversas registradas na plataforma.
         </p>
+        {% if not is_admin %}
+        <p style="color: #92400e; line-height: 1.6; font-size: 0.9375rem; margin: 0.75rem 0 0 0;">
+            <strong>🔒 Segurança:</strong> Por questões de segurança, cada API Key é vinculada a um agente específico.
+        </p>
+        {% endif %}
     </div>
 
     <form method="post">
@@ -90,14 +95,55 @@ Content-Type: application/json</pre>
         </div>
         
         <div class="form-group">
-            <label class="form-label" for="organization">Organização</label>
-            <select name="organization" id="organization" class="form-select" required>
-                <option value="">Selecione a organização...</option>
+            <label class="form-label" for="organization">Padaria</label>
+            <select name="organization" id="organization" class="form-select" required onchange="updateAgentOptions()">
+                <option value="">Selecione a padaria...</option>
                 {% for org in organizations %}
                 <option value="{{ org.id }}">{{ org.name }}</option>
                 {% endfor %}
             </select>
         </div>
+        
+        <div class="form-group">
+            <label class="form-label" for="agent">Agente {% if not is_admin %}<span style="color: #ef4444;">*</span>{% else %}(opcional){% endif %}</label>
+            <select name="agent" id="agent" class="form-select" {% if not is_admin %}required{% endif %}>
+                {% if is_admin %}
+                <option value="">Acesso a todos os agentes</option>
+                {% else %}
+                <option value="">Selecione um agente...</option>
+                {% endif %}
+            </select>
+            <small class="form-helper" style="display: block; margin-top: 0.5rem; color: var(--gray-500); font-size: 0.875rem;">
+                {% if is_admin %}
+                    💡 Deixe em branco para acesso a todos os agentes da padaria.
+                {% else %}
+                    🔒 Por segurança, você deve selecionar um agente específico para esta API Key.
+                {% endif %}
+            </small>
+        </div>
+        
+        <script>
+            const agentsByOrg = {{ agents_by_org|safe }};
+            
+            function updateAgentOptions() {
+                const orgSelect = document.getElementById('organization');
+                const agentSelect = document.getElementById('agent');
+                const orgId = orgSelect.value;
+                
+                // Limpar opções atuais
+                agentSelect.innerHTML = '<option value="">Acesso a todos os agentes</option>';
+                
+                // Adicionar agentes da organização selecionada
+                if (orgId && agentsByOrg[orgId]) {
+                    agentsByOrg[orgId].forEach(agent => {
+                        const option = document.createElement('option');
+                        option.value = agent.id;
+                        option.textContent = agent.name;
+                        agentSelect.appendChild(option);
+                    });
+                }
+            }
+        </script>
         
         <div style="display: flex; gap: 0.75rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-200);">
             <button type="submit" class="btn btn-primary">

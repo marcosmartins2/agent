@@ -138,6 +138,12 @@ LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "ui:dashboard"
 LOGOUT_REDIRECT_URL = "accounts:login"
 
+# Authentication Backends (permite login com email ou username)
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameBackend',  # Nosso backend personalizado
+    'django.contrib.auth.backends.ModelBackend',  # Backend padrão como fallback
+]
+
 # CSRF Trusted Origins
 csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = []

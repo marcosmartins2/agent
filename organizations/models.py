@@ -109,7 +109,7 @@ class PadariaUser(models.Model):
 class ApiKey(models.Model):
     """
     Chave de API para autenticação de integrações (n8n).
-    Vinculada à Padaria.
+    Vinculada a um Agente específico.
     """
     key = models.CharField(max_length=64, unique=True, db_index=True, verbose_name="Chave")
     padaria = models.ForeignKey(
@@ -117,6 +117,15 @@ class ApiKey(models.Model):
         on_delete=models.CASCADE,
         related_name="api_keys",
         verbose_name="Padaria"
+    )
+    agent = models.ForeignKey(
+        'agents.Agent',
+        on_delete=models.CASCADE,
+        related_name="api_keys",
+        null=True,
+        blank=True,
+        verbose_name="Agente",
+        help_text="Se definido, essa API Key só terá acesso a este agente específico"
     )
     is_active = models.BooleanField(default=True, verbose_name="Ativa")
     name = models.CharField(max_length=100, blank=True, verbose_name="Nome/Descrição")
@@ -129,7 +138,8 @@ class ApiKey(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.padaria.name} - {self.key[:12]}..."
+        agent_info = f" - {self.agent.name}" if self.agent else ""
+        return f"{self.padaria.name}{agent_info} - {self.key[:12]}..."
 
     def save(self, *args, **kwargs):
         if not self.key:
@@ -140,6 +150,16 @@ class ApiKey(models.Model):
     def generate_key():
         """Gera uma nova chave única."""
         return f"sk_{secrets.token_urlsafe(32)}"
+    
+    def has_access_to_agent(self, agent):
+        """
+        Verifica se esta API Key tem acesso ao agente especificado.
+        """
+        # Se não tem agente específico, tem acesso a todos da padaria
+        if not self.agent:
+            return agent.padaria == self.padaria
+        # Se tem agente específico, só acessa esse
+        return self.agent == agent
 
 
 # Alias para compatibilidade durante migração

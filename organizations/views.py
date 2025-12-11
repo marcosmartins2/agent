@@ -15,8 +15,14 @@ def get_user_padarias(user):
 
 @login_required
 def organization_list(request):
-    """Lista de padarias do usuário."""
+    """Redireciona para a padaria do usuário ou lista se for admin."""
     padarias = get_user_padarias(request.user)
+    
+    # Se não for superuser e tiver apenas uma padaria, redireciona direto
+    if not request.user.is_superuser and padarias.count() == 1:
+        padaria = padarias.first()
+        return redirect('organizations:detail', slug=padaria.slug)
+    
     return render(request, "organizations/list.html", {"organizations": padarias})
 
 
@@ -42,9 +48,21 @@ def organization_create(request):
         return redirect("organizations:list")
     
     if request.method == "POST":
-        name = request.POST.get("name")
+        name = request.POST.get("name", "").strip()
+        cnpj = request.POST.get("cnpj", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        email = request.POST.get("email", "").strip()
+        address = request.POST.get("address", "").strip()
+        
         if name:
-            org = Padaria.objects.create(name=name, owner=request.user)
+            org = Padaria.objects.create(
+                name=name,
+                owner=request.user,
+                cnpj=cnpj,
+                phone=phone,
+                email=email,
+                address=address
+            )
             
             # Criar membership como dono
             PadariaUser.objects.create(user=request.user, padaria=org, role='dono')
@@ -52,12 +70,18 @@ def organization_create(request):
             AuditLog.log(
                 action="create",
                 entity="Padaria",
-                organization=org,
+                padaria=org,
                 actor=request.user,
                 entity_id=org.id,
-                diff={"name": name}
+                diff={
+                    "name": name,
+                    "cnpj": cnpj,
+                    "phone": phone,
+                    "email": email,
+                    "address": address
+                }
             )
-            messages.success(request, f"Padaria '{name}' criada com sucesso!")
+            messages.success(request, f"Padaria '{name}' criada com sucesso!\nUsuário '{request.user.email}' vinculado como dono.")
             return redirect("organizations:detail", slug=org.slug)
         else:
             messages.error(request, "Nome é obrigatório.")
@@ -77,22 +101,45 @@ def organization_edit(request, slug):
         return redirect("organizations:list")
     
     if request.method == "POST":
-        name = request.POST.get("name")
+        name = request.POST.get("name", "").strip()
+        cnpj = request.POST.get("cnpj", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        email = request.POST.get("email", "").strip()
+        address = request.POST.get("address", "").strip()
+        
         if name:
-            old_name = organization.name
+            # Preparar diff para auditoria
+            diff = {}
+            if organization.name != name:
+                diff['name'] = {'old': organization.name, 'new': name}
+            if organization.cnpj != cnpj:
+                diff['cnpj'] = {'old': organization.cnpj, 'new': cnpj}
+            if organization.phone != phone:
+                diff['phone'] = {'old': organization.phone, 'new': phone}
+            if organization.email != email:
+                diff['email'] = {'old': organization.email, 'new': email}
+            if organization.address != address:
+                diff['address'] = {'old': organization.address, 'new': address}
+            
+            # Atualizar campos
             organization.name = name
+            organization.cnpj = cnpj
+            organization.phone = phone
+            organization.email = email
+            organization.address = address
             organization.save()
             
-            AuditLog.log(
-                action="update",
-                entity="Padaria",
-                organization=organization,
-                actor=request.user,
-                entity_id=organization.id,
-                diff={"old_name": old_name, "new_name": name}
-            )
+            if diff:
+                AuditLog.log(
+                    action="update",
+                    entity="Padaria",
+                    padaria=organization,
+                    actor=request.user,
+                    entity_id=organization.id,
+                    diff=diff
+                )
             
-            messages.success(request, "Padaria atualizada com sucesso!")
+            messages.success(request, "Informações atualizadas com sucesso!")
             return redirect("organizations:detail", slug=organization.slug)
         else:
             messages.error(request, "Nome é obrigatório.")
@@ -132,7 +179,16 @@ def organization_delete(request, slug):
 def apikey_list(request):
     """Lista de API keys do usuário."""
     padarias = get_user_padarias(request.user)
-    api_keys = ApiKey.objects.filter(padaria__in=padarias)
+    
+    # Admin vê todas as API Keys das padarias dele
+    if request.user.is_superuser:
+        api_keys = ApiKey.objects.filter(padaria__in=padarias)
+    else:
+        # Usuários normais só veem API Keys dos seus agentes
+        from agents.models import Agent
+        user_agents = Agent.objects.filter(padaria__in=padarias)
+        api_keys = ApiKey.objects.filter(agent__in=user_agents)
+    
     return render(request, "organizations/apikey_list.html", {"api_keys": api_keys})
 
 
@@ -143,6 +199,7 @@ def apikey_create(request):
     
     if request.method == "POST":
         org_id = request.POST.get("organization")
+        agent_id = request.POST.get("agent")
         name = request.POST.get("name", "")
         
         organization = get_object_or_404(Padaria, id=org_id)
@@ -152,25 +209,60 @@ def apikey_create(request):
             messages.error(request, "Você não tem acesso a esta padaria.")
             return redirect("organizations:apikeys")
         
+        # Para usuários não-admin, agente é obrigatório
+        if not request.user.is_superuser and not agent_id:
+            messages.error(request, "Você deve selecionar um agente específico para a API Key.")
+            return redirect("organizations:apikey_create")
+        
+        # Buscar agente se fornecido
+        agent = None
+        if agent_id:
+            from agents.models import Agent
+            agent = get_object_or_404(Agent, id=agent_id, padaria=organization)
+            
+            # Verificar se usuário tem acesso a este agente (não-admin)
+            if not request.user.is_superuser:
+                from .models import PadariaUser
+                user_padarias = PadariaUser.objects.filter(user=request.user).values_list('padaria_id', flat=True)
+                if agent.padaria_id not in user_padarias:
+                    messages.error(request, "Você não tem acesso a este agente.")
+                    return redirect("organizations:apikeys")
+        
         api_key = ApiKey.objects.create(
             padaria=organization,
+            agent=agent,
             name=name
         )
+        
+        agent_info = f" para agente '{agent.name}'" if agent else " (acesso a todos os agentes)"
         
         AuditLog.log(
             action="create",
             entity="ApiKey",
-            organization=organization,
+            padaria=organization,
             actor=request.user,
             entity_id=api_key.id,
-            diff={"name": name}
+            diff={
+                "name": name,
+                "agent": agent.name if agent else "Todos"
+            }
         )
         
-        messages.success(request, f"API Key criada: {api_key.key}")
-        messages.warning(request, "Copie a chave agora! Ela não será exibida novamente.")
+        messages.success(request, f"API Key criada{agent_info}: {api_key.key}")
+        messages.warning(request, "⚠️ Copie a chave agora! Ela não será exibida novamente.")
         return redirect("organizations:apikeys")
     
-    return render(request, "organizations/apikey_form.html", {"organizations": padarias})
+    # Buscar agentes para o formulário
+    from agents.models import Agent
+    agents_by_org = {}
+    for padaria in padarias:
+        agents_by_org[padaria.id] = list(Agent.objects.filter(padaria=padaria, is_active=True).values('id', 'name'))
+    
+    return render(request, "organizations/apikey_form.html", {
+        "organizations": padarias,
+        "agents_by_org": agents_by_org,
+        "is_admin": request.user.is_superuser
+    })
 
 
 @login_required
@@ -179,10 +271,18 @@ def apikey_delete(request, pk):
     padarias = get_user_padarias(request.user)
     api_key = get_object_or_404(ApiKey, pk=pk)
     
-    # Verificar acesso
-    if not request.user.is_superuser and api_key.padaria not in padarias:
-        messages.error(request, "Você não tem acesso a esta API key.")
-        return redirect("organizations:apikeys")
+    # Verificar acesso - admin pode deletar qualquer uma da padaria
+    if request.user.is_superuser:
+        if api_key.padaria not in padarias:
+            messages.error(request, "Você não tem acesso a esta API key.")
+            return redirect("organizations:apikeys")
+    else:
+        # Usuários normais só podem deletar API Keys dos seus agentes
+        from agents.models import Agent
+        user_agents = Agent.objects.filter(padaria__in=padarias)
+        if not api_key.agent or api_key.agent not in user_agents:
+            messages.error(request, "Você não tem acesso a esta API key.")
+            return redirect("organizations:apikeys")
     
     if request.method == "POST":
         organization = api_key.padaria
@@ -191,7 +291,7 @@ def apikey_delete(request, pk):
         AuditLog.log(
             action="delete",
             entity="ApiKey",
-            organization=organization,
+            padaria=organization,
             actor=request.user,
             entity_id=api_key.id,
             diff={"key_preview": key_preview}

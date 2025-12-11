@@ -1,35 +1,60 @@
-import re
+import subprocess
+import sys
 
-# Read file
-with open('templates/agents/form_new.html', 'r', encoding='utf-8') as f:
-    content = f.read()
+# Get the original file from git
+result = subprocess.run(
+    ['git', 'show', 'HEAD:templates/agents/form_new.html'],
+    capture_output=True,
+    cwd=r'c:\Users\ruben\OneDrive\Documentos\GitHub\agent'
+)
 
-# Fix all multi-line template tags - pattern for {% if ... on one line and rest on next
-# Replace all occurrences of {% if followed by newline+content+%}checked{% endif %}
-pattern = r'\{% if\s*\n\s*form\.status_toggle\.value==value or value==.ativo. and not form\.status_toggle\.value\s*\n\s*%\}checked\{% endif %\}'
-replacement = '{% if form.status_toggle.value == value or value == "ativo" and not form.status_toggle.value %}checked{% endif %}'
+if result.returncode != 0:
+    print(f'Git error: {result.stderr.decode("utf-8", errors="replace")}')
+    sys.exit(1)
 
-content = re.sub(pattern, replacement, content, flags=re.DOTALL)
+# Decode as utf-8 (git outputs utf-8)
+content = result.stdout.decode('utf-8')
 
-# Also handle the variant with {% if at end of line
-pattern2 = r'\{% if\s+\n\s*form\.status_toggle\.value==value or value==.ativo. and not form\.status_toggle\.value\s*%\}checked\{%\s*\n\s*endif %\}'
-content = re.sub(pattern2, replacement, content, flags=re.DOTALL)
-
-# Direct string replacement for the exact problematic pattern
-old_str = '''{% if
-                            form.status_toggle.value==value or value=='ativo' and not form.status_toggle.value
-                            %}checked{% endif %}'''
-new_str = '{% if form.status_toggle.value == value or value == "ativo" and not form.status_toggle.value %}checked{% endif %}'
-content = content.replace(old_str, new_str)
-
-# Also handle similar pattern with different indentation
-old_str2 = '''{% if
+# Fix 1: Lines 157-160 (first multi-line if tag)
+old1 = '''                    <input type="radio" name="status_toggle_display" id="status_{{ value }}_top" value="{{ value }}"
+                        onchange="document.getElementById('status_toggle_hidden').value = this.value" {% if
                         form.status_toggle.value==value or value=='ativo' and not form.status_toggle.value %}checked{%
-                        endif %}'''
-content = content.replace(old_str2, new_str)
+                        endif %}>'''
 
-# Write back
-with open('templates/agents/form_new.html', 'w', encoding='utf-8') as f:
+new1 = '''                    <input type="radio" name="status_toggle_display" id="status_{{ value }}_top" value="{{ value }}" onchange="document.getElementById('status_toggle_hidden').value = this.value" {% if form.status_toggle.value == value or value == 'ativo' and not form.status_toggle.value %}checked{% endif %}>'''
+
+# Fix 2: Lines 260-262 (second multi-line if tag)
+old2 = '''                        <input type="radio" name="status_toggle" id="status_{{ value }}" value="{{ value }}" {% if
+                            form.status_toggle.value==value or value=='ativo' and not form.status_toggle.value
+                            %}checked{% endif %}>'''
+
+new2 = '''                        <input type="radio" name="status_toggle" id="status_{{ value }}" value="{{ value }}" {% if form.status_toggle.value == value or value == 'ativo' and not form.status_toggle.value %}checked{% endif %}>'''
+
+# Apply fixes
+if old1 in content:
+    content = content.replace(old1, new1)
+    print('Fix 1 applied (lines 157-160)')
+else:
+    print('Fix 1 target not found')
+
+if old2 in content:
+    content = content.replace(old2, new2)
+    print('Fix 2 applied (lines 260-262)')
+else:
+    print('Fix 2 target not found')
+
+# Write to the file
+target = r'c:\Users\ruben\OneDrive\Documentos\GitHub\agent\templates\agents\form_new.html'
+with open(target, 'w', encoding='utf-8', newline='\r\n') as f:
     f.write(content)
 
-print('Fixed template tags')
+print(f'Successfully wrote {len(content)} bytes to {target}')
+
+# Verify
+with open(target, 'r', encoding='utf-8') as f:
+    verify = f.read()
+
+if new2 in verify:
+    print('VERIFIED: Fix is present in written file!')
+else:
+    print('ERROR: Fix NOT in written file!')

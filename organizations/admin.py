@@ -12,7 +12,8 @@ class ApiKeyInline(admin.TabularInline):
     model = ApiKey
     extra = 0
     readonly_fields = ['key', 'created_at', 'last_used_at']
-    fields = ['key', 'name', 'is_active', 'created_at', 'last_used_at']
+    fields = ['key', 'agent', 'name', 'is_active', 'created_at', 'last_used_at']
+    autocomplete_fields = ['agent']
 
 
 @admin.register(Padaria)
@@ -49,10 +50,11 @@ class PadariaUserAdmin(admin.ModelAdmin):
 
 @admin.register(ApiKey)
 class ApiKeyAdmin(admin.ModelAdmin):
-    list_display = ['padaria', 'name', 'key_preview', 'is_active', 'last_used_at']
-    list_filter = ['is_active', 'padaria']
-    search_fields = ['padaria__name', 'name']
+    list_display = ['padaria', 'agent', 'name', 'key_preview', 'is_active', 'last_used_at']
+    list_filter = ['is_active', 'padaria', 'agent']
+    search_fields = ['padaria__name', 'agent__name', 'name']
     readonly_fields = ['key', 'created_at', 'last_used_at']
+    autocomplete_fields = ['agent']
     
     def key_preview(self, obj):
         return f"{obj.key[:12]}..."

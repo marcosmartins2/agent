@@ -31,13 +31,6 @@ def get_agent_config(request, slug):
     try:
         agent = Agent.objects.get(slug=slug, padaria=padaria, is_active=True)
     except Agent.DoesNotExist:
-        # Log de debug para ajudar a identificar o problema
-        print(f"DEBUG API - Agente não encontrado:")
-        print(f"  - Slug buscado: {slug}")
-        print(f"  - Padaria da API Key: {padaria.name} (ID: {padaria.id})")
-        print(f"  - Agentes disponíveis nesta padaria:")
-        for a in Agent.objects.filter(padaria=padaria):
-            print(f"    - {a.slug} (ativo: {a.is_active})")
         return JsonResponse({
             "error": "Agent not found",
             "details": {
@@ -47,11 +40,22 @@ def get_agent_config(request, slug):
             }
         }, status=404)
     
+    # Verificar se a API Key tem acesso a este agente
+    if not request.api_key.has_access_to_agent(agent):
+        return JsonResponse({
+            "error": "Access denied",
+            "details": {
+                "message": "Esta API Key não tem permissão para acessar este agente",
+                "api_key_agent": request.api_key.agent.name if request.api_key.agent else "Todos",
+                "requested_agent": agent.name
+            }
+        }, status=403)
+    
     # Log da requisição
     AuditLog.log(
         action="api_call",
         entity="Agent",
-        organization=padaria,
+        padaria=padaria,
         entity_id=agent.id,
         diff={
             "endpoint": "get_agent_config",
@@ -103,10 +107,6 @@ def get_agent_knowledge(request, slug):
     try:
         agent = Agent.objects.get(slug=slug, padaria=padaria, is_active=True)
     except Agent.DoesNotExist:
-        # Log de debug
-        print(f"DEBUG API Knowledge - Agente não encontrado:")
-        print(f"  - Slug buscado: {slug}")
-        print(f"  - Padaria da API Key: {padaria.name} (ID: {padaria.id})")
         return JsonResponse({
             "error": "Agent not found",
             "details": {
@@ -115,11 +115,22 @@ def get_agent_knowledge(request, slug):
             }
         }, status=404)
     
+    # Verificar se a API Key tem acesso a este agente
+    if not request.api_key.has_access_to_agent(agent):
+        return JsonResponse({
+            "error": "Access denied",
+            "details": {
+                "message": "Esta API Key não tem permissão para acessar este agente",
+                "api_key_agent": request.api_key.agent.name if request.api_key.agent else "Todos",
+                "requested_agent": agent.name
+            }
+        }, status=403)
+    
     # Log da requisição
     AuditLog.log(
         action="api_call",
         entity="Agent",
-        organization=padaria,
+        padaria=padaria,
         entity_id=agent.id,
         diff={
             "endpoint": "get_agent_knowledge",

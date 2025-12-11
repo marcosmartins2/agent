@@ -23,9 +23,15 @@ def get_user_padarias(user):
 
 @login_required
 def agent_list(request):
-    """Lista de agentes do usuário."""
+    """Redireciona para o agente do usuário ou lista se tiver múltiplos."""
     padarias = get_user_padarias(request.user)
     agents = Agent.objects.filter(padaria__in=padarias).select_related('padaria')
+    
+    # Se não for superuser e tiver apenas um agente, redireciona direto
+    if not request.user.is_superuser and agents.count() == 1:
+        agent = agents.first()
+        return redirect('agents:detail', slug=agent.slug)
+    
     return render(request, "agents/list.html", {"agents": agents})
 
 
@@ -153,7 +159,7 @@ def agent_create(request):
             AuditLog.log(
                 action="create",
                 entity="Agent",
-                organization=agent.padaria,
+                padaria=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"name": agent.name, "slug": agent.slug}
@@ -289,7 +295,7 @@ def agent_edit(request, slug):
             AuditLog.log(
                 action="update",
                 entity="Agent",
-                organization=agent.padaria,
+                padaria=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"name": agent.name}
@@ -327,7 +333,7 @@ def agent_delete(request, slug):
         AuditLog.log(
             action="delete",
             entity="Agent",
-            organization=padaria,
+            padaria=padaria,
             actor=request.user,
             entity_id=agent.id,
             diff={"name": agent_name, "slug": slug}
@@ -383,7 +389,7 @@ def agent_delete_pdf(request, slug):
             AuditLog.log(
                 action="delete_pdf",
                 entity="Agent",
-                organization=agent.padaria,
+                padaria=agent.padaria,
                 actor=request.user,
                 entity_id=agent.id,
                 diff={"agent": agent.name, "action": "PDF deletado"}
