@@ -173,6 +173,15 @@ if DEBUG:
         "https://*.ngrok-free.dev",
     ])
 
+# Security Settings
+# Desabilitar HTTPS redirect até configurar SSL
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+SECURE_HSTS_SECONDS = 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+
 # Cache configuration (para rate limiting)
 CACHES = {
     "default": {

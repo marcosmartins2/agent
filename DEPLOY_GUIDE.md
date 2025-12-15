@@ -62,6 +62,11 @@ su - pandia
 
 ### 3.1 Criar banco de dados
 ```bash
+# Voltar para o usuário root primeiro (se estiver como pandia)
+exit  # Se estiver como pandia
+
+# Executar do diretório /tmp para evitar permissões
+cd /tmp
 sudo -u postgres psql
 ```
 
@@ -74,6 +79,16 @@ ALTER ROLE pandia_user SET default_transaction_isolation TO 'read committed';
 ALTER ROLE pandia_user SET timezone TO 'America/Sao_Paulo';
 GRANT ALL PRIVILEGES ON DATABASE pandia_db TO pandia_user;
 \q
+```
+
+**Alternativa (criar tudo em um comando):**
+```bash
+sudo -u postgres psql -c "CREATE DATABASE pandia_db;"
+sudo -u postgres psql -c "CREATE USER pandia_user WITH PASSWORD 'SUA_SENHA_FORTE_AQUI';"
+sudo -u postgres psql -c "ALTER ROLE pandia_user SET client_encoding TO 'utf8';"
+sudo -u postgres psql -c "ALTER ROLE pandia_user SET default_transaction_isolation TO 'read committed';"
+sudo -u postgres psql -c "ALTER ROLE pandia_user SET timezone TO 'America/Sao_Paulo';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE pandia_db TO pandia_user;"
 ```
 
 ---
@@ -123,9 +138,9 @@ nano /home/pandia/pandia/.env
 Cole o conteúdo (ajuste os valores):
 ```env
 DEBUG=0
-SECRET_KEY=GERE_UMA_CHAVE_SECRETA_FORTE_AQUI
-ALLOWED_HOSTS=seu-dominio.com,www.seu-dominio.com,SEU_IP_VPS
-CSRF_TRUSTED_ORIGINS=https://seu-dominio.com,https://www.seu-dominio.com
+SECRET_KEY=gqclws)y_!6)!)=eh#v(uv-dk-t08##7k7*vf(!(600rm^4%7&
+ALLOWED_HOSTS=31.97.95.233
+CSRF_TRUSTED_ORIGINS=http://31.97.95.233
 TIME_ZONE=America/Sao_Paulo
 LANGUAGE_CODE=pt-br
 
@@ -133,7 +148,7 @@ LANGUAGE_CODE=pt-br
 DB_ENGINE=django.db.backends.postgresql
 DB_NAME=pandia_db
 DB_USER=pandia_user
-DB_PASSWORD=SUA_SENHA_FORTE_AQUI
+DB_PASSWORD=pandiaadmin
 DB_HOST=localhost
 DB_PORT=5432
 ```
