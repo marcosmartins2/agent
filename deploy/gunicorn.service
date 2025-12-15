@@ -1,0 +1,17 @@
+[Unit]
+Description=Gunicorn daemon for Pandia
+After=network.target
+
+[Service]
+User=pandia
+Group=www-data
+WorkingDirectory=/home/pandia/pandia
+Environment="PATH=/home/pandia/pandia/venv/bin"
+ExecStart=/home/pandia/pandia/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/home/pandia/pandia/gunicorn.sock \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
